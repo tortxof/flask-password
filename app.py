@@ -1,9 +1,20 @@
 import os
 import stat
+from functools import wraps
 
 from flask import Flask, render_template, session, flash, request, redirect, url_for
 
 import database
+
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if 'appuser' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('You are not logged in.')
+            return redirect(url_for('login'))
+    return wrapper
 
 db = database.Database('/data/passwords.db')
 
@@ -24,8 +35,10 @@ def index():
     if db.is_new():
         flash('No users have been added yet. Add the first user.')
         return redirect(url_for('setup'))
-    else:
+    elif 'appuser' in session:
         return render_template('index.html')
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
