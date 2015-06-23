@@ -38,7 +38,7 @@ class Database(object):
     def new_appuser(self, form):
         conn = self.db_conn()
         cur = conn.cursor()
-        password_hash = generate_password_hash(form.get('password'), method='pbkdf2:sha256')
+        password_hash = generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000')
         cur.execute('insert into appusers values (?, ?)', (form.get('appuser'), password_hash))
         rowid = cur.lastrowid
         appuser = conn.execute('select appuser from appusers where rowid=?', (rowid,)).fetchone()[0]
