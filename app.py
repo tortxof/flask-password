@@ -49,5 +49,20 @@ def setup():
     else:
         return render_template('setup.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        appuser = request.form.get('appuser')
+        password = request.form.get('password')
+        if db.check_password(appuser, password):
+            session['appuser'] = appuser
+            flash('You are logged in.')
+            return redirect(url_for('index'))
+        else:
+            flash('Incorrect username or password.')
+            return render_template('login.html')
+    else:
+        return render_template('login.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
