@@ -42,12 +42,16 @@ def index():
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
-    if request.method == 'POST':
-        db.new_appuser(request.form.to_dict())
-        flash('Added user.')
-        return redirect(url_for('index'))
+    if db.is_new():
+        if request.method == 'POST':
+            db.new_appuser(request.form.to_dict())
+            flash('Added user.')
+            return redirect(url_for('index'))
+        else:
+            return render_template('setup.html')
     else:
-        return render_template('setup.html')
+        flash('Setup is already complete.')
+        return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
