@@ -31,14 +31,9 @@ with open('/data/key', 'rb') as f:
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
 @app.route('/')
+@login_required
 def index():
-    if db.is_new():
-        flash('No users have been added yet. Add the first user.')
-        return redirect(url_for('setup'))
-    elif 'appuser' in session:
-        return render_template('index.html')
-    else:
-        return redirect(url_for('login'))
+    return render_template('index.html')
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
@@ -66,7 +61,11 @@ def login():
             flash('Incorrect username or password.')
             return render_template('login.html')
     else:
-        return render_template('login.html')
+        if db.is_new():
+            flash('No users have been added yet. Add the first user.')
+            return redirect(url_for('setup'))
+        else:
+            return render_template('login.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
