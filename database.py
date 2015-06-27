@@ -10,6 +10,7 @@ class Database(object):
         self.dbfile = dbfile
         conn = self.db_conn()
         conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other)')
+        conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, notindexed=id, notindexed=password, notindexed=other)')
         conn.execute('create table if not exists appusers (appuser text primary key not null, password)')
         conn.commit()
         conn.close()
