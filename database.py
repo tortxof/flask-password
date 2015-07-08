@@ -2,6 +2,7 @@ import sqlite3
 import os
 import base64
 import time
+import string
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -11,7 +12,7 @@ class Database(object):
         conn = self.db_conn()
         conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other)')
         conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, notindexed=id, notindexed=password, notindexed=other)')
-        conn.execute('create table if not exists appusers (appuser text primary key not null, password)')
+        conn.execute('create table if not exists appusers (appuser text primary key not null, password, salt)')
         conn.commit()
         conn.close()
 
@@ -36,11 +37,20 @@ class Database(object):
         conn.close()
         return num_appusers == 0
 
+    def username_valid(self, username):
+        if not len(username) > 2:
+            return False
+        if not set(username) <= set(string.digits + string.ascii_letters + string.punctuation):
+            return False
+        return True
+
     def new_appuser(self, form):
+        if not self.username_valid(form.get('appuser')):
+            return False
         conn = self.db_conn()
         cur = conn.cursor()
         password_hash = generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000')
-        cur.execute('insert into appusers values (?, ?)', (form.get('appuser'), password_hash))
+        cur.execute('insert into appusers values (?, ?, ?)', (form.get('appuser'), password_hash, os.urandom(16)))
         rowid = cur.lastrowid
         appuser = conn.execute('select appuser from appusers where rowid=?', (rowid,)).fetchone()[0]
         conn.commit()

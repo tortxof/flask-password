@@ -39,8 +39,11 @@ def index():
 def setup():
     if db.is_new():
         if request.method == 'POST':
-            db.new_appuser(request.form.to_dict())
-            flash('Added user.')
+            user_added = db.new_appuser(request.form.to_dict())
+            if user_added:
+                flash('Added user {}.'.format(user_added))
+            else:
+                flash('Invalid username.')
             return redirect(url_for('index'))
         else:
             return render_template('setup.html')
