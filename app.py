@@ -35,21 +35,17 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 def index():
     return render_template('index.html')
 
-@app.route('/setup', methods=['GET', 'POST'])
-def setup():
-    if db.is_new():
-        if request.method == 'POST':
-            user_added = db.new_user(request.form.to_dict())
-            if user_added:
-                flash('Added user {}.'.format(user_added))
-            else:
-                flash('Invalid username.')
-            return redirect(url_for('index'))
+@app.route('/new-user', methods=['GET', 'POST'])
+def new_user():
+    if request.method == 'POST':
+        user_added = db.new_user(request.form.to_dict())
+        if user_added:
+            flash('Added user {}.'.format(user_added))
         else:
-            return render_template('setup.html')
-    else:
-        flash('Setup is already complete.')
+            flash('Invalid username.')
         return redirect(url_for('index'))
+    else:
+        return render_template('new-user.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -66,7 +62,7 @@ def login():
     else:
         if db.is_new():
             flash('No users have been added yet. Add the first user.')
-            return redirect(url_for('setup'))
+            return redirect(url_for('new_user'))
         else:
             return render_template('login.html')
 
