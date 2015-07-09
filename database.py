@@ -3,6 +3,10 @@ import os
 import base64
 import time
 import string
+import hashlib
+
+import bcrypt
+from Crypto.Cipher import AES
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -15,6 +19,28 @@ class Database(object):
         conn.execute('create table if not exists users (id text primary key not null, username, password, salt)')
         conn.commit()
         conn.close()
+
+    def old_encrypt(self, key, data):
+        '''Encrypts data with AES cipher using key and random iv.'''
+        if type(key) is str:
+            key = key.encode()
+        key = hashlib.sha256(key).digest()[:AES.block_size]
+        iv = os.urandom(AES.block_size)
+        cipher = AES.new(key, AES.MODE_CFB, iv)
+        return iv + cipher.encrypt(data)
+
+    def old_decrypt(self, key, data):
+        '''Decrypt ciphertext using key'''
+        if type(key) is str:
+            key = key.encode()
+        key = hashlib.sha256(key).digest()[:AES.block_size]
+        iv = os.urandom(AES.block_size)
+        cipher = AES.new(key, AES.MODE_CFB, iv)
+        return cipher.decrypt(data)[AES.block_size:].decode()
+
+    def old_kdf(self, password, salt):
+        '''Generate aes key from password and salt.'''
+        return bcrypt.kdf(password, salt, 16, 32)
 
     def new_id(self):
         return base64.urlsafe_b64encode(os.urandom(24)).decode()
