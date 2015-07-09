@@ -10,9 +10,9 @@ class Database(object):
     def __init__(self, dbfile):
         self.dbfile = dbfile
         conn = self.db_conn()
-        conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other)')
-        conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, notindexed=id, notindexed=password, notindexed=other)')
-        conn.execute('create table if not exists appusers (appuser text primary key not null, password, salt)')
+        conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other, user_id)')
+        conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, user_id, notindexed=id, notindexed=password, notindexed=other, notindexed=user_id)')
+        conn.execute('create table if not exists users (id text primary key not null, username, password, salt)')
         conn.commit()
         conn.close()
 
@@ -33,9 +33,9 @@ class Database(object):
 
     def is_new(self):
         conn = self.db_conn()
-        num_appusers = len(conn.execute('select appuser from appusers').fetchall())
+        num_users = len(conn.execute('select id from users').fetchall())
         conn.close()
-        return num_appusers == 0
+        return num_users == 0
 
     def username_valid(self, username):
         if not len(username) > 2:
@@ -44,21 +44,24 @@ class Database(object):
             return False
         return True
 
-    def new_appuser(self, form):
-        if not self.username_valid(form.get('appuser')):
+    def new_user(self, form):
+        if not self.username_valid(form.get('username')):
             return False
+        user = {'id': self.new_id(),
+                'username': form.get('username'),
+                'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000')
+                'salt': os.urandom(16)}
         conn = self.db_conn()
         cur = conn.cursor()
-        password_hash = generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000')
-        cur.execute('insert into appusers values (?, ?, ?)', (form.get('appuser'), password_hash, os.urandom(16)))
+        cur.execute('insert into users values (:id, :username, :password, :salt)', user)
         rowid = cur.lastrowid
-        appuser = conn.execute('select appuser from appusers where rowid=?', (rowid,)).fetchone()[0]
+        username = conn.execute('select username from users where rowid=?', (rowid,)).fetchone()[0]
         conn.commit()
         conn.close()
-        return appuser
+        return username
 
-    def check_password(self, appuser, password):
+    def check_password(self, username, password):
         conn = self.db_conn()
-        password_hash = conn.execute('select password from appusers where appuser=?', (appuser,)).fetchone()[0]
+        password_hash = conn.execute('select password from users where username=?', (username,)).fetchone()[0]
         conn.close()
         return check_password_hash(password_hash, password)
