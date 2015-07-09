@@ -20,7 +20,6 @@
         <a class="navbar-brand" href="#">Password Manager</a>
       </div>
       <div class="collapse navbar-collapse" id="navbar">
-        {% if 'username' in session %}{% include 'search_form.html' %}{% endif %}
         <ul class="nav navbar-nav navbar-right">
           {% if 'username' in session %}<li><a href="/logout">Log Out</a></li>{% endif %}
           <li><a href="/new-user">Sign Up</a></li>
@@ -29,6 +28,7 @@
     </div>
   </nav>
   <div class="container">
+    {% if 'username' in session %}{% include 'search_form.html' %}{% endif %}
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% for message in messages %}
