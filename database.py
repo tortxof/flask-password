@@ -49,7 +49,7 @@ class Database(object):
             return False
         user = {'id': self.new_id(),
                 'username': form.get('username'),
-                'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000')
+                'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
                 'salt': os.urandom(16)}
         conn = self.db_conn()
         cur = conn.cursor()
