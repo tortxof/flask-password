@@ -16,7 +16,7 @@ class Database(object):
         conn = self.db_conn()
         conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other, user_id)')
         conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, user_id, notindexed=id, notindexed=password, notindexed=other, notindexed=user_id)')
-        conn.execute('create table if not exists users (id text primary key not null, username, password, salt)')
+        conn.execute('create table if not exists users (id text primary key not null, username unique, password, salt)')
         conn.commit()
         conn.close()
 
@@ -88,6 +88,10 @@ class Database(object):
 
     def check_password(self, username, password):
         conn = self.db_conn()
-        password_hash = conn.execute('select password from users where username=?', (username,)).fetchone()[0]
+        password_hash = conn.execute('select password from users where username=?', (username,)).fetchone()
         conn.close()
+        if not password_hash:
+            return False
+        else:
+            password_hash = password_hash[0]
         return check_password_hash(password_hash, password)
