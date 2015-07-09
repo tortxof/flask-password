@@ -9,7 +9,7 @@ import database
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if 'appuser' in session:
+        if 'username' in session:
             return f(*args, **kwargs)
         else:
             flash('You are not logged in.')
@@ -39,7 +39,7 @@ def index():
 def setup():
     if db.is_new():
         if request.method == 'POST':
-            user_added = db.new_appuser(request.form.to_dict())
+            user_added = db.new_user(request.form.to_dict())
             if user_added:
                 flash('Added user {}.'.format(user_added))
             else:
@@ -54,10 +54,10 @@ def setup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        appuser = request.form.get('appuser')
+        username = request.form.get('username')
         password = request.form.get('password')
-        if db.check_password(appuser, password):
-            session['appuser'] = appuser
+        if db.check_password(username, password):
+            session['username'] = username
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
@@ -72,7 +72,7 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if session.pop('appuser', None):
+    if session.pop('username', None):
         flash('You have been logged out.')
     else:
         flash('You were not logged in.')
