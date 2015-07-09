@@ -20,9 +20,9 @@
         <a class="navbar-brand" href="#">Password Manager</a>
       </div>
       <div class="collapse navbar-collapse">
-        {% if 'appuser' in session %}{% include 'search_form.html' %}{% endif %}
+        {% if 'username' in session %}{% include 'search_form.html' %}{% endif %}
         <ul class="nav navbar-nav navbar-right">
-          {% if 'appuser' in session %}<li><a href="/logout">Log Out</a></li>{% endif %}
+          {% if 'username' in session %}<li><a href="/logout">Log Out</a></li>{% endif %}
           <li><a href="/new-user">Sign Up</a></li>
         </ul>
       </div>
