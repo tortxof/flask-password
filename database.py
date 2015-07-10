@@ -22,7 +22,7 @@ class Database(object):
 
     # Crypto functions
 
-    def old_encrypt(self, key, data):
+    def encrypt(self, key, data):
         '''Encrypts data with AES cipher using key and random iv.'''
         if type(key) is str:
             key = key.encode()
@@ -31,7 +31,7 @@ class Database(object):
         cipher = AES.new(key, AES.MODE_CFB, iv)
         return iv + cipher.encrypt(data)
 
-    def old_decrypt(self, key, data):
+    def decrypt(self, key, data):
         '''Decrypt ciphertext using key'''
         if type(key) is str:
             key = key.encode()
@@ -40,7 +40,7 @@ class Database(object):
         cipher = AES.new(key, AES.MODE_CFB, iv)
         return cipher.decrypt(data)[AES.block_size:].decode()
 
-    def old_kdf(self, password, salt):
+    def kdf(self, password, salt):
         '''Generate aes key from password and salt.'''
         return bcrypt.kdf(password, salt, 16, 32)
 
@@ -70,6 +70,20 @@ class Database(object):
         if not set(username) <= set(string.digits + string.ascii_letters + string.punctuation):
             return False
         return True
+
+    def decrypt_record(self, record, key):
+        if record.get('password'):
+            record['password'] = self.decrypt(key, record.get('password'))
+        if record.get('other'):
+            record['other'] = self.decrypt(key, record.get('other'))
+        return record
+
+    def encrypt_record(self, record, key):
+        if record.get('password'):
+            record['password'] = self.encrypt(key, record.get('password'))
+        if record.get('other'):
+            record['other'] = self.encrypt(key, record.get('other'))
+        return record
 
     # users table functions
 
@@ -135,7 +149,7 @@ class Database(object):
         return self.get(record['id'], record['user_id'])
 
     def update_password(self, record):
-        pass
+        return self.get(record['id'], record['user_id'])
 
     def delete_password(self, password_id, user_id):
         pass
