@@ -156,7 +156,17 @@ class Database(object):
         return self.get(record['id'], record['user_id'], key)
 
     def update_password(self, record, key):
+        record = self.encrypt_record(record, key)
+        conn = self.db_conn()
+        conn.execute('update passwords set title=:title, url=:url, username=:username, password=:password, other=:other where id=:id and user_id=:user_id', record)
+        conn.commit()
+        conn.close()
         return self.get(record['id'], record['user_id'], key)
 
     def delete_password(self, password_id, user_id, key):
-        pass
+        record = self.get(password_id, user_id, key)
+        conn = self.db_conn()
+        conn.execute('delete from passwords where id=? and user_id=?', (password_id, user_id))
+        conn.commit()
+        conn.close()
+        return record
