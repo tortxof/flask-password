@@ -49,7 +49,7 @@ class Database(object):
     def new_id(self):
         return base64.urlsafe_b64encode(os.urandom(24)).decode()
 
-    def rows_to_dict(self, rows):
+    def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
         rows_out = []
         for row in rows:
@@ -104,14 +104,23 @@ class Database(object):
 
     # passwords table functions
 
-    def search(self, query):
-        pass
+    def search(self, query, user_id):
+        conn = self.db_conn()
+        records = conn.execute('select * from passwords_fts where user_id=? and passwords_fts match ?', (user_id, query)).fetchall()
+        conn.close()
+        return self.rows_to_dicts(records)
 
     def get(self, password_id, user_id):
-        pass
+        conn = self.db_conn()
+        record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
+        conn.close()
+        return dict(record)
 
     def get_all(self, user_id):
-        pass
+        conn = self.db_conn()
+        records = conn.execute('select * from passwords where user_id=?', (user_id,)).fetchall()
+        conn.close()
+        return self.rows_to_dicts(records)
 
     def new_password(self, record):
         pass
