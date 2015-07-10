@@ -137,7 +137,7 @@ class Database(object):
         conn = self.db_conn()
         record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
         conn.close()
-        return self.decrypt_record(dict(record))
+        return self.decrypt_record(dict(record), key)
 
     def get_all(self, user_id, key):
         conn = self.db_conn()

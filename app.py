@@ -80,5 +80,14 @@ def logout():
         flash('You were not logged in.')
     return redirect(url_for('login'))
 
+@app.route('/add', methods=['POST'])
+@login_required
+def add_record():
+    record = request.form.to_dict()
+    record['user_id'] = session.get('user_id')
+    record = db.create_password(record, session.get('key'))
+    flash('Record added.')
+    return render_template('add_record.html', record=record)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
