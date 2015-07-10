@@ -80,6 +80,13 @@ def logout():
         flash('You were not logged in.')
     return redirect(url_for('login'))
 
+@app.route('/search')
+@login_required
+def search():
+    query = request.args.get('q', '')
+    records = db.search(query, session.get('user_id'), session.get('key'))
+    return render_template('search.html', records=records)
+
 @app.route('/add', methods=['POST'])
 @login_required
 def add_record():

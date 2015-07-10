@@ -1,0 +1,6 @@
+{% extends 'layout.html' %}
+{% block content %}
+{% for record in records %}
+  {% include 'record.html' %}
+{% endfor %}
+{% endblock %}
