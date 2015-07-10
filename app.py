@@ -9,7 +9,7 @@ import database
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if 'username' in session:
+        if all(x in session for x in ('username', 'user_id', 'key')):
             return f(*args, **kwargs)
         else:
             flash('You are not logged in.')
