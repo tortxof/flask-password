@@ -51,10 +51,7 @@ class Database(object):
 
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
-        rows_out = []
-        for row in rows:
-            rows_out.append(dict(row))
-        return rows_out
+        return [dict(row) for row in rows]
 
     def db_conn(self):
         conn = sqlite3.connect(self.dbfile)
