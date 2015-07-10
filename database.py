@@ -65,7 +65,7 @@ class Database(object):
         return num_users == 0
 
     def username_valid(self, username):
-        if not len(username) > 2:
+        if not 2 < len(username) <= 64:
             return False
         if not set(username) <= set(string.digits + string.ascii_letters + string.punctuation):
             return False
