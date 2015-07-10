@@ -127,6 +127,12 @@ class Database(object):
 
     # passwords table functions
 
+    def rebuild_fts(self):
+        conn = self.db_conn()
+        conn.execute('insert into passwords_fts(passwords_fts) values("rebuild")')
+        conn.commit()
+        conn.close()
+
     def search(self, query, user_id, key):
         conn = self.db_conn()
         records = conn.execute('select * from passwords_fts where user_id=? and passwords_fts match ?', (user_id, query)).fetchall()
@@ -153,6 +159,7 @@ class Database(object):
         conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
         conn.commit()
         conn.close()
+        self.rebuild_fts()
         return self.get(record['id'], record['user_id'], key)
 
     def update_password(self, record, key):
@@ -161,6 +168,7 @@ class Database(object):
         conn.execute('update passwords set title=:title, url=:url, username=:username, password=:password, other=:other where id=:id and user_id=:user_id', record)
         conn.commit()
         conn.close()
+        self.rebuild_fts()
         return self.get(record['id'], record['user_id'], key)
 
     def delete_password(self, password_id, user_id, key):
@@ -169,4 +177,5 @@ class Database(object):
         conn.execute('delete from passwords where id=? and user_id=?', (password_id, user_id))
         conn.commit()
         conn.close()
+        self.rebuild_fts()
         return record
