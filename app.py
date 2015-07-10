@@ -53,7 +53,11 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         if db.check_password(username, password):
+            user_id = db.get_user_id(username)
+            salt = db.get_user_salt(user_id)
             session['username'] = username
+            session['user_id'] = user_id
+            session['key'] = db.kdf(password, salt)
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
@@ -69,6 +73,8 @@ def login():
 @app.route('/logout')
 def logout():
     if session.pop('username', None):
+        session.pop('user_id', None)
+        session.pop('key', None)
         flash('You have been logged out.')
     else:
         flash('You were not logged in.')

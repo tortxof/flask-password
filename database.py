@@ -119,6 +119,12 @@ class Database(object):
         conn.close()
         return salt
 
+    def get_user_id(self, username):
+        conn = self.db_conn()
+        user_id = conn.execute('select id from users where username=?', (username,)).fetchone()['id']
+        conn.close()
+        return user_id
+
     # passwords table functions
 
     def search(self, query, user_id):
