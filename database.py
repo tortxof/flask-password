@@ -127,35 +127,36 @@ class Database(object):
 
     # passwords table functions
 
-    def search(self, query, user_id):
+    def search(self, query, user_id, key):
         conn = self.db_conn()
         records = conn.execute('select * from passwords_fts where user_id=? and passwords_fts match ?', (user_id, query)).fetchall()
         conn.close()
-        return self.rows_to_dicts(records)
+        return [self.decrypt_record(record, key) for record in self.rows_to_dicts(records)]
 
-    def get(self, password_id, user_id):
+    def get(self, password_id, user_id, key):
         conn = self.db_conn()
         record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
         conn.close()
-        return dict(record)
+        return self.decrypt_record(dict(record))
 
-    def get_all(self, user_id):
+    def get_all(self, user_id, key):
         conn = self.db_conn()
         records = conn.execute('select * from passwords where user_id=?', (user_id,)).fetchall()
         conn.close()
-        return self.rows_to_dicts(records)
+        return [self.decrypt_record(record, key) for record in self.rows_to_dicts(records)]
 
-    def create_password(self, record):
+    def create_password(self, record, key):
         record['password'] = self.new_id()
         record['id'] = self.new_id()
+        record = self.encrypt_record(record, key)
         conn = self.db_conn()
         conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
         conn.commit()
         conn.close()
-        return self.get(record['id'], record['user_id'])
+        return self.get(record['id'], record['user_id'], key)
 
-    def update_password(self, record):
-        return self.get(record['id'], record['user_id'])
+    def update_password(self, record, key):
+        return self.get(record['id'], record['user_id'], key)
 
-    def delete_password(self, password_id, user_id):
+    def delete_password(self, password_id, user_id, key):
         pass
