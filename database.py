@@ -99,6 +99,12 @@ class Database(object):
             password_hash = password_hash[0]
         return check_password_hash(password_hash, password)
 
+    def get_user_salt(self, user_id):
+        conn = self.db_conn()
+        salt = conn.execute('select salt from users where id=?', (user_id,)).fetchone()['salt']
+        conn.close()
+        return salt
+
     # passwords table functions
 
     def search(self, query, user_id):
@@ -119,7 +125,7 @@ class Database(object):
         conn.close()
         return self.rows_to_dicts(records)
 
-    def new_password(self, record):
+    def create_password(self, record):
         pass
 
     def update_password(self, record):
