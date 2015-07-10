@@ -20,6 +20,8 @@ class Database(object):
         conn.commit()
         conn.close()
 
+    # Crypto functions
+
     def old_encrypt(self, key, data):
         '''Encrypts data with AES cipher using key and random iv.'''
         if type(key) is str:
@@ -41,6 +43,8 @@ class Database(object):
     def old_kdf(self, password, salt):
         '''Generate aes key from password and salt.'''
         return bcrypt.kdf(password, salt, 16, 32)
+
+    # DB utility functions
 
     def new_id(self):
         return base64.urlsafe_b64encode(os.urandom(24)).decode()
@@ -70,6 +74,8 @@ class Database(object):
             return False
         return True
 
+    # users table functions
+
     def new_user(self, form):
         if not self.username_valid(form.get('username')):
             return False
@@ -95,3 +101,5 @@ class Database(object):
         else:
             password_hash = password_hash[0]
         return check_password_hash(password_hash, password)
+
+    # passwords table functions
