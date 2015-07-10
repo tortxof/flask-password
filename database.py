@@ -103,3 +103,21 @@ class Database(object):
         return check_password_hash(password_hash, password)
 
     # passwords table functions
+
+    def search(self, query):
+        pass
+
+    def get(self, password_id, user_id):
+        pass
+
+    def get_all(self, user_id):
+        pass
+
+    def new_password(self, record):
+        pass
+
+    def update_password(self, record):
+        pass
+
+    def delete_password(self, password_id, user_id):
+        pass
