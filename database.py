@@ -126,7 +126,13 @@ class Database(object):
         return self.rows_to_dicts(records)
 
     def create_password(self, record):
-        pass
+        record['password'] = self.new_id()
+        record['id'] = self.new_id()
+        conn = self.db_conn()
+        conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
+        conn.commit()
+        conn.close()
+        return self.get(record['id'], record['user_id'])
 
     def update_password(self, record):
         pass
