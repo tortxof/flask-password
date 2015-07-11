@@ -20,9 +20,19 @@
         <a class="navbar-brand" href="#">Password Manager</a>
       </div>
       <div class="collapse navbar-collapse" id="navbar">
+        <ul class="nav navbar-nav">
+          {% if 'username' in session %}
+          <li><a href="/">Home</a></li>
+          <li><a href="/all">All Records</a></li>
+          {% endif %}
+        </ul>
         <ul class="nav navbar-nav navbar-right">
-          {% if 'username' in session %}<li><a href="/logout">Log Out</a></li>{% endif %}
+          {% if 'username' in session %}
+          <li><a href="/logout">{{ session.username }}: Log Out</a></li>
+          {% else %}
+          <li><a href="/login">Log In</a></li>
           <li><a href="/new-user">Sign Up</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>
