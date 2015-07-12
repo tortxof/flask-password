@@ -96,7 +96,10 @@ class Database(object):
                 'salt': os.urandom(16)}
         conn = self.db_conn()
         cur = conn.cursor()
-        cur.execute('insert into users values (:id, :username, :password, :salt)', user)
+        try:
+            cur.execute('insert into users values (:id, :username, :password, :salt)', user)
+        except sqlite3.IntegrityError:
+            return False
         rowid = cur.lastrowid
         username = conn.execute('select username from users where rowid=?', (rowid,)).fetchone()[0]
         conn.commit()
