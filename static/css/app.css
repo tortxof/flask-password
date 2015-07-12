@@ -3,3 +3,7 @@
   background-color: transparent;
   width: 100%;
 }
+
+.password {
+  font-family: monospace;
+}
