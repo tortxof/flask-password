@@ -14,9 +14,17 @@ class Database(object):
     def __init__(self, dbfile):
         self.dbfile = dbfile
         conn = self.db_conn()
-        conn.execute('create table if not exists passwords (id text primary key not null, title, url, username, password, other, user_id)')
-        conn.execute('create virtual table if not exists passwords_fts using fts4(content="passwords", id, title, url, username, password, other, user_id, notindexed=id, notindexed=password, notindexed=other, notindexed=user_id)')
-        conn.execute('create table if not exists users (id text primary key not null, username unique, password, salt)')
+        conn.execute('create table if not exists passwords '
+                     '(id text primary key not null, '
+                     'title, url, username, password, other, user_id)')
+        conn.execute('create virtual table if not exists passwords_fts '
+                     'using fts4(content="passwords", '
+                     'id, title, url, username, password, other, user_id, '
+                     'notindexed=id, notindexed=password, notindexed=other, '
+                     'notindexed=user_id)')
+        conn.execute('create table if not exists users '
+                     '(id text primary key not null, '
+                     'username unique, password, salt)')
         conn.commit()
         conn.close()
 
@@ -67,7 +75,8 @@ class Database(object):
     def username_valid(self, username):
         if not 2 < len(username) <= 64:
             return False
-        if not set(username) <= set(string.digits + string.ascii_letters + string.punctuation):
+        if not set(username) <= set(string.digits + string.ascii_letters +
+                                    string.punctuation):
             return False
         return True
 
