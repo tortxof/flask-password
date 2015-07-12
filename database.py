@@ -32,17 +32,16 @@ class Database(object):
 
     def encrypt(self, key, data):
         '''Encrypts data with AES cipher using key and random iv.'''
-        if type(key) is str:
-            key = key.encode()
+        key = self.b64_decode(key)
         key = hashlib.sha256(key).digest()[:AES.block_size]
         iv = os.urandom(AES.block_size)
         cipher = AES.new(key, AES.MODE_CFB, iv)
-        return iv + cipher.encrypt(data)
+        return self.b64_encode(iv + cipher.encrypt(data))
 
     def decrypt(self, key, data):
         '''Decrypt ciphertext using key'''
-        if type(key) is str:
-            key = key.encode()
+        key = self.b64_decode(key)
+        data = self.b64_decode(data)
         key = hashlib.sha256(key).digest()[:AES.block_size]
         iv = os.urandom(AES.block_size)
         cipher = AES.new(key, AES.MODE_CFB, iv)
@@ -50,12 +49,19 @@ class Database(object):
 
     def kdf(self, password, salt):
         '''Generate aes key from password and salt.'''
-        return bcrypt.kdf(password, salt, 16, 32)
+        salt = self.b64_decode(salt)
+        return self.b64_encode(bcrypt.kdf(password, salt, 16, 32))
 
     # DB utility functions
 
+    def b64_decode(self, i):
+        return base64.urlsafe_b64decode(i)
+
+    def b64_encode(self, i):
+        return base64.urlsafe_b64encode(i).decode()
+
     def new_id(self):
-        return base64.urlsafe_b64encode(os.urandom(24)).decode()
+        return self.b64_encode(os.urandom(24))
 
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
@@ -102,7 +108,7 @@ class Database(object):
         user = {'id': self.new_id(),
                 'username': form.get('username'),
                 'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
-                'salt': os.urandom(16)}
+                'salt': self.b64_encode(os.urandom(16))}
         conn = self.db_conn()
         cur = conn.cursor()
         try:
