@@ -85,12 +85,14 @@ def logout():
 def search():
     query = request.args.get('q', '')
     records = db.search(query, session.get('user_id'), session.get('key'))
+    flash('Records found: {}'.format(len(records)))
     return render_template('records.html', records=records)
 
 @app.route('/all')
 @login_required
 def all_records():
     records = db.get_all(session.get('user_id'), session.get('key'))
+    flash('Records found: {}'.format(len(records)))
     return render_template('records.html', records=records)
 
 @app.route('/add', methods=['POST'])
@@ -112,6 +114,7 @@ def delete_record(password_id=None):
         flash('Record deleted.')
         return render_template('records.html', records=[record])
     else:
+        flash('Are you sure you want to delete this record?')
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('delete_record.html', record=record)
 
