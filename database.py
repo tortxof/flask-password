@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import random
 import base64
 import time
 import string
@@ -62,6 +63,16 @@ class Database(object):
 
     def new_id(self):
         return self.b64_encode(os.urandom(24))
+
+    def pwgen(self, l=12):
+        sys_rand = random.SystemRandom()
+        allowed_chars = string.ascii_letters + string.digits
+        while True:
+            password = ''.join(sys_rand.choice(allowed_chars) for i in range(l))
+            if (any(c in password for c in string.ascii_lowercase) and
+                any(c in password for c in string.ascii_uppercase) and
+                any(c in password for c in string.digits)):
+                return password
 
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
@@ -170,7 +181,7 @@ class Database(object):
         return [self.decrypt_record(record, key) for record in self.rows_to_dicts(records)]
 
     def create_password(self, record, key):
-        record['password'] = self.new_id()
+        record['password'] = self.pwgen()
         record['id'] = self.new_id()
         record = self.encrypt_record(record, key)
         conn = self.db_conn()
