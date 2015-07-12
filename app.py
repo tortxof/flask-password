@@ -85,13 +85,13 @@ def logout():
 def search():
     query = request.args.get('q', '')
     records = db.search(query, session.get('user_id'), session.get('key'))
-    return render_template('search.html', records=records)
+    return render_template('records.html', records=records)
 
 @app.route('/all')
 @login_required
 def all_records():
     records = db.get_all(session.get('user_id'), session.get('key'))
-    return render_template('search.html', records=records)
+    return render_template('records.html', records=records)
 
 @app.route('/add', methods=['POST'])
 @login_required
@@ -110,7 +110,7 @@ def delete_record(password_id=None):
         password_id = request.form.get('password_id')
         record = db.delete_password(password_id, session.get('user_id'), session.get('key'))
         flash('Record deleted.')
-        return render_template('search.html', records=[record])
+        return render_template('records.html', records=[record])
     else:
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('delete_record.html', record=record)
@@ -124,7 +124,7 @@ def edit_record(password_id=None):
         record['user_id'] = session.get('user_id')
         record = db.update_password(record, session.get('key'))
         flash('Record updated.')
-        return render_template('search.html', records=[record])
+        return render_template('records.html', records=[record])
     else:
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('edit_record.html', record=record)
