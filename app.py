@@ -115,5 +115,19 @@ def delete_record(password_id=None):
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('delete_record.html', record=record)
 
+@app.route('/edit', methods=['POST'])
+@app.route('/edit/<password_id>')
+@login_required
+def edit_record(password_id=None):
+    if request.method == 'POST':
+        record = request.form.to_dict()
+        record['user_id'] = session.get('user_id')
+        record = db.update_password(record, session.get('key'))
+        flash('Record updated.')
+        return render_template('search.html', records=[record])
+    else:
+        record = db.get(password_id, session.get('user_id'), session.get('key'))
+        return render_template('edit_record.html', record=record)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')

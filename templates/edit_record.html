@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading"><h3 class="panel-title">Edit Record</h3></div>
+  <div class="panel-body">
+    <form action="/edit" method="post">
+      <input type="hidden" name="id" value="{{ record.id }}">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input class="form-control" type="text" name="title" id="title" value="{{ record.title }}">
+      </div>
+      <div class="form-group">
+        <label for="url">URL</label>
+        <input class="form-control" type="text" name="url" id="url" value="{{ record.url }}">
+      </div>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input class="form-control" type="text" name="username" id="username" value="{{ record.username }}">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input class="form-control" type="text" name="password" id="password" value="{{ record.password }}">
+      </div>
+      <div class="form-group">
+        <label for="other">Other</label>
+        <textarea class="form-control" name="other" id="other">{{ record.other }}</textarea>
+      </div>
+      <button class="btn btn-default" type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
