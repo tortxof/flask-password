@@ -2,7 +2,7 @@ import os
 import stat
 from functools import wraps
 
-from flask import Flask, render_template, session, flash, request, redirect, url_for
+from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
 
 import database
 
@@ -46,6 +46,11 @@ def new_user():
         return redirect(url_for('index'))
     else:
         return render_template('new-user.html')
+
+@app.route('/username-available')
+def userexists():
+    username = request.args.get('user')
+    return jsonify(available=db.username_available(username))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -132,6 +132,14 @@ class Database(object):
         conn.close()
         return username
 
+    def username_available(self, username):
+        if not self.username_valid(username):
+            return False
+        conn = self.db_conn()
+        n = conn.execute('select count(id) from users where username=?', (username,)).fetchone()[0]
+        conn.close()
+        return n == 0
+
     def check_password(self, username, password):
         conn = self.db_conn()
         password_hash = conn.execute('select password from users where username=?', (username,)).fetchone()

@@ -1,12 +1,12 @@
 $(document).ready(function() {
   $('#newusername').on('change keyup', function() {
     var username = $(this).val();
-    $.getJSON('/userexists', {user: username}, function(data) {
-      if (data.exists) {
-        $('#newusername').css({'color': 'red'});
+    $.getJSON('/username-available', {user: username}, function(data) {
+      if (data.available) {
+        $('#newusername').parent().addClass("has-success has-feedback").removeClass("has-error").find("span").addClass("glyphicon-ok").removeClass("glyphicon-remove");
       }
       else {
-        $('#newusername').css({'color': 'green'});
+        $('#newusername').parent().addClass("has-error has-feedback").removeClass("has-success").find("span").addClass("glyphicon-remove").removeClass("glyphicon-ok");
       }
     });
   });
