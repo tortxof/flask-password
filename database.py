@@ -74,6 +74,13 @@ class Database(object):
                 any(c in password for c in string.digits)):
                 return password
 
+    def pingen(self, l=4):
+        sys_rand = random.SystemRandom()
+        pin = ''
+        for i in range(l):
+            pin += str(sys_rand.randrange(10))
+        return pin
+
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
         return [dict(row) for row in rows]

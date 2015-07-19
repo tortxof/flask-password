@@ -166,5 +166,15 @@ def import_records():
     else:
         return render_template('import_records.html')
 
+@app.route('/generate')
+@login_required
+def generate_passwords():
+    passwords = []
+    pins = []
+    for i in range(144):
+        passwords.append(db.pwgen())
+        pins.append(db.pingen())
+    return jsonify(passwords=passwords, pins=pins)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
