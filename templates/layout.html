@@ -26,6 +26,20 @@
           <li><a href="/">Home</a></li>
           <li><a href="/all">All Records</a></li>
           {% endif %}
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" href="#">
+              <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              {% if 'username' in session %}
+              <li><a href="/import">Import</a></li>
+              <li><a href="/export">Export</a></li>
+              <li class="divider"></li>
+              {% endif %}
+              <li><a href="/about">About</a></li>
+            </ul>
+          </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if 'username' in session %}
