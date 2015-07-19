@@ -182,6 +182,16 @@ class Database(object):
         conn.close()
         return self.decrypt_record(dict(record), key)
 
+    def get_many(self, password_ids, user_id, key):
+        records = []
+        conn = self.db_conn()
+        for password_id in password_ids:
+            record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
+            record = self.decrypt_record(dict(record), key)
+            records.append(record)
+        conn.close()
+        return records
+
     def get_all(self, user_id, key):
         conn = self.db_conn()
         records = conn.execute('select * from passwords where user_id=?', (user_id,)).fetchall()
@@ -216,3 +226,27 @@ class Database(object):
         conn.close()
         self.rebuild_fts()
         return record
+
+    def import_passwords(self, records, user_id, key):
+        imported_ids = {'new': [], 'updated': []}
+        conn = self.db_conn()
+        for record in records:
+            is_new = False
+            record['user_id'] = user_id
+            if not 'password' in record:
+                record['password'] = self.pwgen()
+            record = self.encrypt_record(record, key)
+            if (not 'id' in record) or (record.get('id') == ''):
+                record['id'] = self.new_id()
+                is_new = True
+            elif conn.execute('select count(id) from passwords where id=?', (record['id'],)).fetchone()[0] == 0:
+                is_new = True
+            if is_new:
+                conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
+                imported_ids['new'].append(record['id'])
+            else:
+                conn.execute('update passwords set title=:title, url=:url, username=:username, password=:password, other=:other where id=:id and user_id=:user_id', record)
+                imported_ids['updated'].append(record['id'])
+        conn.commit()
+        conn.close()
+        return imported_ids

@@ -1,6 +1,7 @@
 import os
 import stat
 from functools import wraps
+import json
 
 from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
 
@@ -142,6 +143,28 @@ def edit_record(password_id=None):
 def export_records():
     records = db.get_all(session.get('user_id'), session.get('key'))
     return jsonify(records=records)
+
+@app.route('/import', methods=['GET', 'POST'])
+@login_required
+def import_records():
+    if request.method == 'POST':
+        records = json.loads(request.form.get('json-data')).get('records')
+        imported_ids = db.import_passwords(records,
+                                           session.get('user_id'),
+                                           session.get('key'))
+        records = db.get_many(imported_ids['new'] + imported_ids['updated'],
+                              session.get('user_id'),
+                              session.get('key'))
+        num_new = len(imported_ids['new'])
+        num_updated = len(imported_ids['updated'])
+        flash('Imported {} records. '
+              '{} new records. '
+              '{} updated records.'.format(num_new + num_updated,
+                                           num_new,
+                                           num_updated))
+        return render_template('records.html', records=records)
+    else:
+        return render_template('import_records.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
