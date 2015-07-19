@@ -137,5 +137,11 @@ def edit_record(password_id=None):
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('edit_record.html', record=record)
 
+@app.route('/export')
+@login_required
+def export_records():
+    records = db.get_all(session.get('user_id'), session.get('key'))
+    return jsonify(records=records)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
