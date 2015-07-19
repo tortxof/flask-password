@@ -31,6 +31,9 @@ with open('/data/key', 'rb') as f:
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
+with open('.git/refs/heads/master') as f:
+    app.config['GIT_VERSION'] = f.read()[:8]
+
 @app.route('/')
 @login_required
 def index():
@@ -175,6 +178,10 @@ def generate_passwords():
         passwords.append(db.pwgen())
         pins.append(db.pingen())
     return jsonify(passwords=passwords, pins=pins)
+
+@app.route('/about')
+def about():
+    return render_template('about.html', version=app.config.get('GIT_VERSION'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
