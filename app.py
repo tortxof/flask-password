@@ -141,6 +141,15 @@ def edit_record(password_id=None):
         record = db.get(password_id, session.get('user_id'), session.get('key'))
         return render_template('edit_record.html', record=record)
 
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        flash('Password change not yet implemented.')
+        return redirect(url_for('index'))
+    else:
+        return render_template('change_password.html')
+
 @app.route('/export')
 @login_required
 def export_records():
