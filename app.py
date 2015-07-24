@@ -10,7 +10,7 @@ import database
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if all(x in session for x in ('username', 'user_id', 'key')):
+        if all(x in session for x in ('username', 'user_id', 'key', 'salt')) and session['salt'] == db.get_user_salt(session['user_id']):
             return f(*args, **kwargs)
         else:
             flash('You are not logged in.')
@@ -67,6 +67,7 @@ def login():
             session['username'] = username
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
+            session['salt'] = salt
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
