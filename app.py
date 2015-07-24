@@ -13,6 +13,8 @@ def login_required(f):
         if all(x in session for x in ('username', 'user_id', 'key', 'salt')) and session['salt'] == db.get_user_salt(session['user_id']):
             return f(*args, **kwargs)
         else:
+            for i in ('username', 'user_id', 'key', 'salt'):
+                session.pop(i, None)
             flash('You are not logged in.')
             return redirect(url_for('login'))
     return wrapper
@@ -82,10 +84,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if session.pop('username', None):
-        session.pop('user_id', None)
-        session.pop('key', None)
-        session.pop('salt', None)
+    if 'username' in session:
+        for i in ('username', 'user_id', 'key', 'salt'):
+            session.pop(i, None)
         flash('You have been logged out.')
     else:
         flash('You were not logged in.')
