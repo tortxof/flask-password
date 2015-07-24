@@ -66,7 +66,7 @@ def login():
             salt = db.get_user_salt(user_id)
             session['username'] = username
             session['user_id'] = user_id
-            session['key'] = db.kdf(password, salt)
+            session['key'] = db.get_user_key(user_id, password, salt)
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:

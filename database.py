@@ -25,7 +25,7 @@ class Database(object):
                      'notindexed=user_id)')
         conn.execute('create table if not exists users '
                      '(id text primary key not null, '
-                     'username unique, password, salt)')
+                     'username unique, password, salt, key)')
         conn.commit()
         conn.close()
 
@@ -51,7 +51,12 @@ class Database(object):
     def kdf(self, password, salt):
         '''Generate aes key from password and salt.'''
         salt = self.b64_decode(salt)
-        return self.b64_encode(bcrypt.kdf(password, salt, 16, 32))
+        dk = hashlib.pbkdf2_hmac('sha256',
+                                 password.encode(),
+                                 salt,
+                                 100000,
+                                 dklen=AES.block_size)
+        return self.b64_encode(dk)
 
     # DB utility functions
 
@@ -104,6 +109,13 @@ class Database(object):
             return False
         return True
 
+    def _password_valid(self, password):
+        if not type(password) is str:
+            return False
+        if not 8 <= len(password) < 1024:
+            return False
+        return True
+
     def decrypt_record(self, record, key):
         if record.get('password'):
             record['password'] = self.decrypt(key, record.get('password'))
@@ -121,16 +133,28 @@ class Database(object):
     # users table functions
 
     def new_user(self, form):
+        '''
+        Derive a key (dk) from user's password and salt.
+        dk is used to encrypt a randomly generated key (dbkey) that is stored in db.
+        dbkey is decrypted and stored in session on login.
+        '''
         if not self.username_valid(form.get('username')):
             return False
+        if not self._password_valid(form.get('password')):
+            return False
+        dbkey = self.b64_encode(os.urandom(AES.block_size))
+        salt = self.b64_encode(os.urandom(16))
+        dk = self.kdf(form.get('password'), salt)
+        dbkey = self.encrypt(dk, dbkey)
         user = {'id': self.new_id(),
                 'username': form.get('username'),
                 'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
-                'salt': self.b64_encode(os.urandom(16))}
+                'salt': salt,
+                'key': dbkey}
         conn = self.db_conn()
         cur = conn.cursor()
         try:
-            cur.execute('insert into users values (:id, :username, :password, :salt)', user)
+            cur.execute('insert into users values (:id, :username, :password, :salt, :key)', user)
         except sqlite3.IntegrityError:
             return False
         rowid = cur.lastrowid
@@ -162,6 +186,14 @@ class Database(object):
         salt = conn.execute('select salt from users where id=?', (user_id,)).fetchone()['salt']
         conn.close()
         return salt
+
+    def get_user_key(self, user_id, password, salt):
+        dk = self.kdf(password, salt)
+        conn = self.db_conn()
+        dbkey = conn.execute('select key from users where id=?', (user_id,)).fetchone()['key']
+        conn.close()
+        dbkey = self.decrypt(dk, dbkey)
+        return dbkey
 
     def get_user_id(self, username):
         conn = self.db_conn()
