@@ -46,7 +46,7 @@ def new_user():
         if user_added:
             flash('Added user {}.'.format(user_added))
         else:
-            flash('Invalid username.')
+            flash('Invalid username or password.')
         return redirect(url_for('index'))
     else:
         return render_template('new-user.html')
