@@ -201,6 +201,26 @@ class Database(object):
         conn.close()
         return user_id
 
+    def change_password(self, form, username, user_id, key):
+        if not self.check_password(username, form.get('oldpw')):
+            return False
+        if not form.get('newpw1') == form.get('newpw2'):
+            return False
+        if not self._password_valid(form.get('newpw1')):
+            return False
+        salt = self.b64_encode(os.urandom(16))
+        dk = self.kdf(form.get('newpw1'), salt)
+        dbkey = self.encrypt(dk, key)
+        user = {'id': user_id,
+                'password': generate_password_hash(form.get('newpw1'), method='pbkdf2:sha256:10000'),
+                'salt': salt,
+                'key': dbkey}
+        conn = self.db_conn()
+        conn.execute('update users set password=:password, salt=:salt, key=:key where id=:id', user)
+        conn.commit()
+        conn.close()
+        return True
+
     # passwords table functions
 
     def rebuild_fts(self):

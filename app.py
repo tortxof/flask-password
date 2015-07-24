@@ -85,6 +85,7 @@ def logout():
     if session.pop('username', None):
         session.pop('user_id', None)
         session.pop('key', None)
+        session.pop('salt', None)
         flash('You have been logged out.')
     else:
         flash('You were not logged in.')
@@ -146,8 +147,11 @@ def edit_record(password_id=None):
 @login_required
 def change_password():
     if request.method == 'POST':
-        flash('Password change not yet implemented.')
-        return redirect(url_for('index'))
+        if db.change_password(request.form.to_dict(), session.get('username'), session.get('user_id'), session.get('key')):
+            flash('Password change successfull')
+        else:
+            flash('There was an error.')
+        return redirect(url_for('logout'))
     else:
         return render_template('change_password.html')
 
