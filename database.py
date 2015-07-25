@@ -34,7 +34,6 @@ class Database(object):
     def encrypt(self, key, data):
         '''Encrypts data with AES cipher using key and random iv.'''
         key = self.b64_decode(key)
-        key = hashlib.sha256(key).digest()[:AES.block_size]
         iv = os.urandom(AES.block_size)
         cipher = AES.new(key, AES.MODE_CFB, iv)
         return self.b64_encode(iv + cipher.encrypt(data))
@@ -43,10 +42,13 @@ class Database(object):
         '''Decrypt ciphertext using key'''
         key = self.b64_decode(key)
         data = self.b64_decode(data)
-        key = hashlib.sha256(key).digest()[:AES.block_size]
         iv = os.urandom(AES.block_size)
         cipher = AES.new(key, AES.MODE_CFB, iv)
-        return cipher.decrypt(data)[AES.block_size:].decode()
+        out = cipher.decrypt(data)[AES.block_size:]
+        try:
+            return out.decode()
+        except AttributeError:
+            return out
 
     def kdf(self, password, salt):
         '''Generate aes key from password and salt.'''
