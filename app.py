@@ -57,7 +57,7 @@ def new_user():
         return render_template('new-user.html')
 
 @app.route('/username-available')
-def userexists():
+def username_available():
     username = request.args.get('user')
     return jsonify(available=db.username_available(username))
 
