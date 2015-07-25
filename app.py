@@ -2,6 +2,7 @@ import os
 import stat
 from functools import wraps
 import json
+from datetime import timedelta
 
 from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
 
@@ -35,6 +36,8 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
 with open('.git/refs/heads/master') as f:
     app.config['GIT_VERSION'] = f.read()[:8]
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 
 @app.route('/')
 @login_required
