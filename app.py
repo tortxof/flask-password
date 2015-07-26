@@ -215,6 +215,12 @@ def generate_passwords():
         pins.append(db.pingen())
     return render_template('generate_passwords.html', passwords=passwords, pins=pins)
 
+@app.route('/user')
+@login_required
+def user_info():
+    user = db.user_info(session.get('user_id'))
+    return render_template('user_info.html', user=user)
+
 @app.route('/about')
 def about():
     return render_template('about.html', version=app.config.get('GIT_VERSION'), hide_search=True)

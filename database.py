@@ -223,6 +223,13 @@ class Database(object):
         conn.close()
         return True
 
+    def user_info(self, user_id):
+        user = {}
+        conn = self.db_conn()
+        user['num_records'] = conn.execute('select count(id) from passwords where user_id=?', (user_id,)).fetchone()[0]
+        conn.close()
+        return user
+
     # passwords table functions
 
     def rebuild_fts(self):
