@@ -213,7 +213,7 @@ def generate_passwords():
     for i in range(144):
         passwords.append(db.pwgen())
         pins.append(db.pingen())
-    return jsonify(passwords=passwords, pins=pins)
+    return render_template('generate_passwords.html', passwords=passwords, pins=pins)
 
 @app.route('/about')
 def about():
