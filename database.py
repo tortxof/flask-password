@@ -99,7 +99,7 @@ class Database(object):
 
     def is_new(self):
         conn = self.db_conn()
-        num_users = len(conn.execute('select id from users').fetchall())
+        num_users = conn.execute('select count(id) from users').fetchone()[0]
         conn.close()
         return num_users == 0
 
