@@ -157,7 +157,7 @@ def change_password():
             flash('There was an error.')
         return redirect(url_for('logout'))
     else:
-        return render_template('change_password.html')
+        return render_template('change_password.html', hide_search=True)
 
 @app.route('/export')
 @login_required
@@ -185,7 +185,7 @@ def import_records():
                                            num_updated))
         return render_template('records.html', records=records)
     else:
-        return render_template('import_records.html')
+        return render_template('import_records.html', hide_search=True)
 
 @app.route('/import-user', methods=['GET', 'POST'])
 @login_required
@@ -203,7 +203,7 @@ def import_user():
         flash('{} records imported.'.format(len(imported_ids['new'])))
         return render_template('records.html', records=records)
     else:
-        return render_template('import_user.html')
+        return render_template('import_user.html', hide_search=True)
 
 @app.route('/generate')
 @login_required
@@ -217,7 +217,7 @@ def generate_passwords():
 
 @app.route('/about')
 def about():
-    return render_template('about.html', version=app.config.get('GIT_VERSION'))
+    return render_template('about.html', version=app.config.get('GIT_VERSION'), hide_search=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
