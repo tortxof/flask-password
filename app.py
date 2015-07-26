@@ -187,6 +187,24 @@ def import_records():
     else:
         return render_template('import_records.html')
 
+@app.route('/import-user', methods=['GET', 'POST'])
+@login_required
+def import_user():
+    if request.method == 'POST':
+        old_username = request.form.get('username')
+        old_password = request.form.get('password')
+        imported_ids = db.import_user(old_username,
+                                      old_password,
+                                      session.get('user_id'),
+                                      session.get('key'))
+        records = db.get_many(imported_ids['new'],
+                              session.get('user_id'),
+                              session.get('key'))
+        flash('{} records imported.'.format(len(imported_ids['new'])))
+        return render_template('records.html', records=records)
+    else:
+        return render_template('import_user.html')
+
 @app.route('/generate')
 @login_required
 def generate_passwords():
