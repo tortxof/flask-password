@@ -114,7 +114,7 @@ class Database(object):
     def _password_valid(self, password):
         if not type(password) is str:
             return False
-        if not 8 <= len(password) < 1024:
+        if not 8 <= len(password) <= 1024:
             return False
         return True
 
