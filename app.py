@@ -2,7 +2,8 @@ import os
 import stat
 from functools import wraps
 import json
-from datetime import timedelta
+import datetime
+
 
 from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
 
@@ -11,10 +12,13 @@ import database
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if all(x in session for x in ('username', 'user_id', 'key', 'salt')) and session['salt'] == db.get_user_salt(session['user_id']):
+        if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time')) and
+           session['salt'] == db.get_user_salt(session['user_id']) and
+           session['time'] >= datetime.datetime.now()):
+            session['time'] = datetime.datetime.now() + datetime.timedelta(minutes=1)
             return f(*args, **kwargs)
         else:
-            for i in ('username', 'user_id', 'key', 'salt'):
+            for i in ('username', 'user_id', 'key', 'salt', 'time'):
                 session.pop(i, None)
             flash('You are not logged in.')
             return redirect(url_for('login'))
@@ -37,7 +41,7 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 with open('.git/refs/heads/master') as f:
     app.config['GIT_VERSION'] = f.read()[:8]
 
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 
 @app.route('/')
 @login_required
@@ -73,6 +77,7 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
+            session['time'] = datetime.datetime.now() + datetime.timedelta(minutes=1)
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
@@ -88,7 +93,7 @@ def login():
 @app.route('/logout')
 def logout():
     if 'username' in session:
-        for i in ('username', 'user_id', 'key', 'salt'):
+        for i in ('username', 'user_id', 'key', 'salt', 'time'):
             session.pop(i, None)
         flash('You have been logged out.')
     else:
