@@ -1,7 +1,10 @@
 {% extends 'layout.html' %}
 {% block content %}
-<p>username: <samp>{{ session.username }}</samp></p>
-<p>user_id: <samp>{{ session.user_id }}</samp></p>
-<p>session_time: {{ user.session_time }} minutes</p>
-<p>Number of Records: {{ user.num_records }}</p>
+<form class="form-inline" action="/user" method="post">
+  <p>username: <samp>{{ session.username }}</samp></p>
+  <p>user_id: <samp>{{ session.user_id }}</samp></p>
+  <p>session_time: <input class="form-control" type="text" name="session_time" value="{{ user.session_time }}"> minutes</p>
+  <p>Number of Records: {{ user.num_records }}</p>
+  <button class="btn btn-default" type="submit">Save Changes</button>
+</form>
 {% endblock %}
