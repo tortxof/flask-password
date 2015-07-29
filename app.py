@@ -220,11 +220,22 @@ def generate_passwords():
         pins.append(db.pingen())
     return render_template('generate_passwords.html', passwords=passwords, pins=pins)
 
-@app.route('/user')
+@app.route('/user', methods=['GET', 'POST'])
 @login_required
 def user_info():
-    user = db.user_info(session.get('user_id'))
-    return render_template('user_info.html', user=user)
+    if request.method == 'POST':
+        session_time = request.form.get('session_time')
+        try:
+            session_time = int(session_time)
+        except ValueError:
+            flash('session_time must be an integer.')
+            return redirect(url_for('index'))
+        db.set_user_session_time(session.get('user_id'), session_time)
+        flash('session_time updated.')
+        return redirect(url_for('index'))
+    else:
+        user = db.user_info(session.get('user_id'))
+        return render_template('user_info.html', user=user)
 
 @app.route('/about')
 def about():
