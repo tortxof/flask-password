@@ -14,7 +14,7 @@ def login_required(f):
     def wrapper(*args, **kwargs):
         if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time')) and
            session['salt'] == db.get_user_salt(session['user_id']) and
-           session['time'] >= int(time.time()):
+           session['time'] >= int(time.time())):
             session['time'] = int(time.time()) + db.get_user_session_time(session['user_id'])
             return f(*args, **kwargs)
         else:
