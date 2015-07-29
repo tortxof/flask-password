@@ -26,6 +26,8 @@ class Database(object):
         conn.execute('create table if not exists users '
                      '(id text primary key not null, '
                      'username unique, password, salt, key, session_time)')
+        if not 'session_time' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
+            conn.execute('alter table users add column session_time')
         conn.commit()
         conn.close()
 
