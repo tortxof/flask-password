@@ -25,7 +25,7 @@ class Database(object):
                      'notindexed=user_id)')
         conn.execute('create table if not exists users '
                      '(id text primary key not null, '
-                     'username unique, password, salt, key)')
+                     'username unique, password, salt, key, session_time)')
         conn.commit()
         conn.close()
 
@@ -152,11 +152,12 @@ class Database(object):
                 'username': form.get('username'),
                 'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
                 'salt': salt,
-                'key': dbkey}
+                'key': dbkey,
+                'session_time': 10}
         conn = self.db_conn()
         cur = conn.cursor()
         try:
-            cur.execute('insert into users values (:id, :username, :password, :salt, :key)', user)
+            cur.execute('insert into users values (:id, :username, :password, :salt, :key, :session_time)', user)
         except sqlite3.IntegrityError:
             return False
         rowid = cur.lastrowid
@@ -202,6 +203,19 @@ class Database(object):
         user_id = conn.execute('select id from users where username=?', (username,)).fetchone()['id']
         conn.close()
         return user_id
+
+    def get_user_session_time(self, user_id):
+        conn = self.db_conn()
+        session_time = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
+        conn.close()
+        return session_time
+
+    def set_user_session_time(self, user_id, session_time):
+        conn = self.db_conn()
+        conn.execute('update users set session_time=:session_time where id=:id',
+                     {'id': user_id, 'session_time': int(session_time)})
+        conn.commit()
+        conn.close()
 
     def change_password(self, form, username, user_id, key):
         if not self.check_password(username, form.get('oldpw')):
