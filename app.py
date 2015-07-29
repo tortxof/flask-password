@@ -2,7 +2,7 @@ import os
 import stat
 from functools import wraps
 import json
-import datetime
+import time
 
 
 from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
@@ -14,8 +14,8 @@ def login_required(f):
     def wrapper(*args, **kwargs):
         if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time')) and
            session['salt'] == db.get_user_salt(session['user_id']) and
-           session['time'] >= datetime.datetime.now()):
-            session['time'] = datetime.datetime.now() + datetime.timedelta(minutes=1)
+           session['time'] >= int(time.time()):
+            session['time'] = int(time.time()) + 60
             return f(*args, **kwargs)
         else:
             for i in ('username', 'user_id', 'key', 'salt', 'time'):
@@ -77,7 +77,7 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
-            session['time'] = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            session['time'] = int(time.time()) + 60
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
