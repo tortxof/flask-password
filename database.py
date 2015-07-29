@@ -28,6 +28,7 @@ class Database(object):
                      'username unique, password, salt, key, session_time)')
         if not 'session_time' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
             conn.execute('alter table users add column session_time')
+            conn.execute('update users set session_time=?', (10,))
         conn.commit()
         conn.close()
 
