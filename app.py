@@ -15,7 +15,7 @@ def login_required(f):
         if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time')) and
            session['salt'] == db.get_user_salt(session['user_id']) and
            session['time'] >= int(time.time())):
-            session['time'] = int(time.time()) + db.get_user_session_time(session['user_id'])
+            session['time'] = int(time.time()) + (db.get_user_session_time(session['user_id']) * 60)
             return f(*args, **kwargs)
         else:
             for i in ('username', 'user_id', 'key', 'salt', 'time'):
@@ -77,7 +77,7 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
-            session['time'] = int(time.time()) + db.get_user_session_time(user_id)
+            session['time'] = int(time.time()) + (db.get_user_session_time(user_id) * 60)
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
