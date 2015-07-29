@@ -230,6 +230,8 @@ def user_info():
         except ValueError:
             flash('session_time must be an integer.')
             return redirect(url_for('index'))
+        if session_time < 1:
+            session_time = 1
         db.set_user_session_time(session.get('user_id'), session_time)
         flash('session_time updated.')
         return redirect(url_for('index'))
