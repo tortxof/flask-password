@@ -244,6 +244,7 @@ class Database(object):
         user = {}
         conn = self.db_conn()
         user['num_records'] = conn.execute('select count(id) from passwords where user_id=?', (user_id,)).fetchone()[0]
+        user['session_time'] = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
         conn.close()
         return user
 

@@ -30,7 +30,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if 'username' in session %}
-          <li><a href="#">{{ session.username }}</a></li>
+          <li><a href="/user">{{ session.username }}</a></li>
           <li><a href="/logout">Log Out</a></li>
           {% else %}
           <li><a href="/login">Log In</a></li>

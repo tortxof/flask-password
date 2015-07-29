@@ -2,5 +2,6 @@
 {% block content %}
 <p>username: <samp>{{ session.username }}</samp></p>
 <p>user_id: <samp>{{ session.user_id }}</samp></p>
+<p>session_time: {{ user.session_time }} minutes</p>
 <p>Number of Records: {{ user.num_records }}</p>
 {% endblock %}
