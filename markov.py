@@ -32,7 +32,7 @@ for word in corpus:
 
 sys_rand = random.SystemRandom()
 
-def gen_password(l=12):
+def gen_password(l=16):
     password = []
     state = sys_rand.choice(string.ascii_lowercase)
     password.append(state)
@@ -42,6 +42,9 @@ def gen_password(l=12):
         x = sys_rand.random() * cumdist[-1]
         state = choices[bisect.bisect(cumdist, x)]
         password.append(state)
+    cap, num = sys_rand.sample(range(len(password)), 2)
+    password[num] = str(sys_rand.randrange(10))
+    password[cap] = password[cap].upper()
     return ''.join(password)
 
 print(gen_password())
