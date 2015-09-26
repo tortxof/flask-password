@@ -11,8 +11,11 @@ from Crypto.Cipher import AES
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import markov
+
 class Database(object):
     def __init__(self, dbfile):
+        self.markov = markov.Markov()
         self.dbfile = dbfile
         conn = self.db_conn()
         conn.execute('create table if not exists passwords '
@@ -74,15 +77,8 @@ class Database(object):
     def new_id(self):
         return self.b64_encode(os.urandom(24))
 
-    def pwgen(self, l=12):
-        sys_rand = random.SystemRandom()
-        allowed_chars = string.ascii_letters + string.digits
-        while True:
-            password = ''.join(sys_rand.choice(allowed_chars) for i in range(l))
-            if (any(c in password for c in string.ascii_lowercase) and
-                any(c in password for c in string.ascii_uppercase) and
-                any(c in password for c in string.digits)):
-                return password
+    def pwgen(self, l=16):
+        return self.markov.gen_password(l=l)
 
     def pingen(self, l=4):
         sys_rand = random.SystemRandom()
