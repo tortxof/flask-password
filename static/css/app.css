@@ -7,3 +7,9 @@
 .password {
   font-family: monospace;
 }
+
+.generated {
+  font-family: monospace;
+  float: left;
+  margin: 0.3em;
+}
