@@ -1,4 +1,3 @@
 uwsgi
 flask
 pycrypto
-py-bcrypt

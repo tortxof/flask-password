@@ -6,7 +6,6 @@ import time
 import string
 import hashlib
 
-import bcrypt
 from Crypto.Cipher import AES
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -333,46 +332,3 @@ class Database(object):
         conn.close()
         self.rebuild_fts()
         return imported_ids
-
-    # Old database (cherry-password)
-
-    def old_encrypt(self, key, data):
-        '''Encrypts data with AES cipher using key and random iv.'''
-        if type(key) is str:
-            key = key.encode()
-        key = hashlib.sha256(key).digest()[:AES.block_size]
-        iv = os.urandom(AES.block_size)
-        cipher = AES.new(key, AES.MODE_CFB, iv)
-        return iv + cipher.encrypt(data)
-
-    def old_decrypt(self, key, data):
-        '''Decrypt ciphertext using key'''
-        if type(key) is str:
-            key = key.encode()
-        key = hashlib.sha256(key).digest()[:AES.block_size]
-        iv = os.urandom(AES.block_size)
-        cipher = AES.new(key, AES.MODE_CFB, iv)
-        return cipher.decrypt(data)[AES.block_size:].decode()
-
-    def old_kdf(self, password, salt):
-        '''Generate aes key from password and salt.'''
-        return bcrypt.kdf(password, salt, 16, 32)
-
-    def import_user(self, old_username, old_password, user_id, key):
-        conn = sqlite3.connect('/data/old_passwords.db')
-        conn.row_factory = sqlite3.Row
-        master_pass = conn.execute('select password, salt from master_pass where appuser=?', (old_username,)).fetchone()
-        master_pass = dict(master_pass)
-        if not bcrypt.checkpw(old_password, master_pass.get('password')):
-            conn.close()
-            return False
-        old_key = self.old_kdf(old_password, master_pass.get('salt'))
-        records = conn.execute('select * from passwords where appuser=?', (old_username,)).fetchall()
-        records = [dict(row) for row in records]
-        conn.close()
-        records = [{'title': row.get('title'),
-                    'url': row.get('url'),
-                    'username': row.get('username'),
-                    'password': self.old_decrypt(old_key, row.get('password')),
-                    'other': self.old_decrypt(old_key, row.get('other'))} for row in records]
-        return self.import_passwords(records, user_id, key)
