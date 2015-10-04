@@ -113,7 +113,7 @@ def search():
     flash('Records found: {}'.format(len(records)))
     return render_template('records.html', records=records)
 
-@app.route('/save-search')
+@app.route('/searches/save')
 @login_required
 def save_search():
     search = {}
@@ -123,6 +123,26 @@ def save_search():
     db.searches_create(search)
     flash('Search term saved.')
     return redirect(url_for('index'))
+
+@app.route('/searches/edit', methods=['POST'])
+@login_required
+def edit_search():
+    if 'delete' in request.form:
+        search = db.searches_delete(request.form.get('id'), session.get('user_id'))
+        flash('Deleted saved search.')
+        return redirect(url_for('index'))
+    else:
+        search = request.form.to_dict()
+        search['user_id'] = session.get('user_id')
+        search = db.searches_update(search)
+        flash('Changes saved.')
+        return redirect(url_for('index'))
+
+@app.route('/searches')
+@login_required
+def edit_searches():
+    searches = db.searches_get_all(session['user_id'])
+    return render_template('searches.html', searches=searches)
 
 @app.route('/all')
 @login_required

@@ -34,10 +34,12 @@
             </a>
             <ul class="dropdown-menu">
               {% if g.get('query') %}
-              <li><a href="/save-search?query={{ g.get('query')|urlencode() }}">Save This Search</a></li>
+              <li><a href="/searches/save?query={{ g.get('query')|urlencode() }}">Save This Search</a></li>
               <li class="divider"></li>
               {% endif %}
               {% if g.get('searches') %}
+              <li><a href="/searches">Edit Searches</a></li>
+              <li class="divider"></li>
                 {% for i in g.get('searches') %}
                 {% if not i.name %}
                 <li><a href="/search?q={{ i.query|urlencode() }}">{{ i.query }}</a></li>
