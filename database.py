@@ -268,10 +268,19 @@ class Database(object):
         return self.searches_get(search['id'], search['user_id'])
 
     def searches_update(self, search):
-        pass
+        conn = self.db_conn()
+        conn.execute('update searches set name=:name, query=:query where id=:id and user_id=:user_id', search)
+        conn.commit()
+        conn.close()
+        return self.searches_get(search['id'], search['user_id'])
 
-    def searches_delete(self, search):
-        pass
+    def searches_delete(self, search_id, user_id):
+        search = self.searches_get(search_id, user_id)
+        conn = self.db_conn()
+        conn.execute('delete from searches where id=? and user_id=?', (search_id, user_id))
+        conn.commit()
+        conn.close()
+        return search
 
     # passwords table functions
 
