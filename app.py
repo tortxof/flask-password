@@ -5,7 +5,7 @@ import json
 import time
 
 
-from flask import Flask, render_template, session, flash, request, redirect, url_for, jsonify
+from flask import Flask, render_template, session, g, flash, request, redirect, url_for, jsonify
 
 import database
 
@@ -17,6 +17,7 @@ def login_required(f):
            session['time'] >= int(time.time())):
             session['time'] = int(time.time()) + (db.get_user_session_time(session['user_id']) * 60)
             session['refresh'] = db.get_user_session_time(session['user_id']) * 60 + 30
+            g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
             for i in ('username', 'user_id', 'key', 'salt', 'time', 'refresh'):
@@ -106,9 +107,22 @@ def logout():
 @login_required
 def search():
     query = request.args.get('q', '')
+    if query:
+        g.query = query
     records = db.search(query, session.get('user_id'), session.get('key'))
     flash('Records found: {}'.format(len(records)))
     return render_template('records.html', records=records)
+
+@app.route('/save-search')
+@login_required
+def save_search():
+    search = {}
+    search['query'] = request.args.get('query')
+    search['user_id'] = session.get('user_id')
+    search['name'] = ''
+    db.searches_create(search)
+    flash('Search term saved.')
+    return redirect(url_for('index'))
 
 @app.route('/all')
 @login_required
