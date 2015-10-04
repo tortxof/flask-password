@@ -25,6 +25,8 @@ class Database(object):
                      'id, title, url, username, password, other, user_id, '
                      'notindexed=id, notindexed=password, notindexed=other, '
                      'notindexed=user_id)')
+        conn.execute('create table if not exists searches '
+                     '(id text primary key not null, name, query, user_id)')
         conn.execute('create table if not exists users '
                      '(id text primary key not null, '
                      'username unique, password, salt, key, session_time)')
@@ -242,6 +244,34 @@ class Database(object):
         user['session_time'] = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
         conn.close()
         return user
+
+    # searches table functions
+
+    def searches_get_all(self, user_id):
+        conn = self.db_conn()
+        searches = conn.execute('select * from searches where user_id=?', (user_id,)).fetchall()
+        conn.close()
+        return self.rows_to_dicts(searches)
+
+    def searches_get(self, search_id, user_id):
+        conn = self.db_conn()
+        search = conn.execute('select * from searches where id=? and user_id=?', (search_id, user_id)).fetchone()
+        conn.close()
+        return dict(search)
+
+    def searches_create(self, search):
+        search['id'] = self.new_id()
+        conn = self.db_conn()
+        conn.execute('insert into searches values(:id, :name, :query, :user_id)', search)
+        conn.commit()
+        conn.close()
+        return self.searches_get(search['id'], search['user_id'])
+
+    def searches_update(self, search):
+        pass
+
+    def searches_delete(self, search):
+        pass
 
     # passwords table functions
 
