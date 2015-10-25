@@ -1,12 +1,12 @@
 {% extends 'layout.html' %}
 {% block content %}
 <h3>Sign Up</h3>
-<form action="/new-user" method="post">
+<form action="/new-user" method="post" novalidate>
   <div class="row">
     <div class="col-md-6">
       <div class="form-group">
         <label for="newusername">Username</label>
-        <input class="form-control" type="text" id="newusername" name="username" inputmode="email" autofocus>
+        <input class="form-control" type="email" id="newusername" name="username" autofocus>
         <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
       </div>
     </div>
