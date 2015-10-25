@@ -96,7 +96,7 @@ def login():
 @app.route('/logout')
 def logout():
     if 'username' in session:
-        for i in ('username', 'user_id', 'key', 'salt', 'time', 'refresh'):
+        for i in tuple(session.keys()):
             session.pop(i, None)
         flash('You have been logged out.')
     else:
