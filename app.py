@@ -219,9 +219,9 @@ def import_records():
                               session.get('key'))
         num_new = len(imported_ids['new'])
         num_updated = len(imported_ids['updated'])
-        flash('Imported {} records. '
-              '{} new records. '
-              '{} updated records.'.format(num_new + num_updated,
+        flash('Imported {0} records. '
+              '{1} new records. '
+              '{2} updated records.'.format(num_new + num_updated,
                                            num_new,
                                            num_updated))
         return render_template('records.html', records=records)
