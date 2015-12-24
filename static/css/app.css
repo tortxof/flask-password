@@ -1,7 +1,5 @@
-.clksel {
-  border: none;
-  background-color: transparent;
-  width: 100%;
+.username, .password {
+  display: inline-block;
 }
 
 .password {

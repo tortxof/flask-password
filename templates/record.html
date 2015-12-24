@@ -14,12 +14,22 @@
 
     <div class="row">
       <div class="col-sm-3"><strong>Username</strong></div>
-      <div class="col-sm-9"><input class="clksel" type="text" readonly="readonly" value="{{ record.username }}"/></div>
+      <div class="col-sm-9">
+        <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{ record.username }}">
+          <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+        </button>
+        <div class="username">{{ record.username }}</div>
+      </div>
     </div>
 
     <div class="row">
       <div class="col-sm-3"><strong>Password</strong></div>
-      <div class="col-sm-9"><input class="clksel password" type="text" readonly="readonly" value="{{ record.password }}"/></div>
+      <div class="col-sm-9">
+        <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{ record.password }}">
+          <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+        </button>
+        <div class="password">{{ record.password }}</div>
+      </div>
     </div>
 
     <div class="row">

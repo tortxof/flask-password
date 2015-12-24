@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
   $('#newusername').on('change keyup', function() {
     var username = $(this).val();
     $.getJSON('/username-available', {user: username}, function(data) {
@@ -11,7 +12,6 @@ $(document).ready(function() {
     });
   });
 
-  $(".clksel").click(function() {
-    $(this).select();
-  });
+  new Clipboard('.cb-copy');
+
 });
