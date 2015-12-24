@@ -233,7 +233,7 @@ def import_records():
 def generate_passwords():
     passwords = []
     pins = []
-    for i in range(144):
+    for i in range(24):
         passwords.append(db.pwgen())
         pins.append(db.pingen())
     return render_template('generate_passwords.html', passwords=passwords, pins=pins)
