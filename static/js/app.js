@@ -12,6 +12,19 @@ $(document).ready(function() {
     });
   });
 
-  new Clipboard('.cb-copy');
+  function showTooltip(elem) {
+    var success_elem = document.createElement('div');
+    success_elem.className = 'cb-copy-success';
+    success_elem.textContent = 'Copied';
+    $(elem).before(success_elem);
+    $(success_elem).delay(1000).fadeOut(500, function() {
+      success_elem.parentNode.removeChild(success_elem);
+    })
+  }
+
+  var clipboard = new Clipboard('.cb-copy');
+  clipboard.on('success', function(e) {
+    showTooltip(e.trigger);
+  });
 
 });
