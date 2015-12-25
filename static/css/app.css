@@ -7,18 +7,21 @@
 }
 
 .generated {
-  position: relative;
   float: left;
   margin: 0.3em;
   padding: 0.3em;
+}
+
+.cb-copy {
+  position: relative;
 }
 
 .cb-copy-success {
   position: absolute;
   z-index: 1000;
   bottom: 50%;
-  right: 100%;
-  transform: translateY(50%);
+  left: 100%;
+  transform: translateY(50%) translateX(3px);
   display: block;
   padding: 0.3em;
   margin: 0;
