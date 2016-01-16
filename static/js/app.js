@@ -22,6 +22,22 @@ $(document).ready(function() {
     })
   }
 
+  var passwords_template = Handlebars.compile($('#passwords_template').html());
+  var pins_template = Handlebars.compile($('#pins_template').html());
+  function renderPasswords() {
+    $.getJSON('/generate/json', function(pw_json) {
+      var passwords_html = passwords_template(pw_json);
+      passwords_html += pins_template(pw_json);
+      $('#genpw-modal-body').html(passwords_html);
+    });
+  }
+  $('#genpw-open').click(function(evt) {
+    evt.preventDefault();
+    renderPasswords();
+    $('#genpw-modal').modal();
+  });
+  $('#genpw-refresh').click(renderPasswords);
+
   var clipboard = new Clipboard('.cb-copy');
   clipboard.on('success', function(e) {
     showTooltip(e.trigger);

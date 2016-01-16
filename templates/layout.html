@@ -26,7 +26,7 @@
           {% if 'username' in session %}
           <li><a href="/">Add Record</a></li>
           <li><a href="/all">All Records</a></li>
-          <li><a href="/generate" target="_blank">Generate Passwords</a></li>
+          <li><a href="/generate" target="_blank" id="genpw-open">Generate Passwords</a></li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Saved Searches
@@ -80,6 +80,18 @@
       </div>
     </div>
   </nav>
+  <div class="modal fade" id="genpw-modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Passwords <button class="btn btn-default" id="genpw-refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button></h4>
+        </div>
+        <div id="genpw-modal-body" class="modal-body">
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="container">
     {% if 'username' in session and not hide_search %}{% include 'search_form.html' %}{% endif %}
     {% with messages = get_flashed_messages() %}
@@ -93,8 +105,41 @@
     {% block content %}
     {% endblock %}
   </div>
+  <script id="passwords_template" type="text/x-handlebars-template">
+    {% raw %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {{#each passwords}}
+          <div class="well generated">
+            <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{this}}">
+              <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+            </button>
+            <div class="password">{{this}}</div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+    {% endraw %}
+  </script>
+  <script id="pins_template" type="text/x-handlebars-template">
+    {% raw %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {{#each pins}}
+        <div class="well generated">
+          <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{this}}">
+            <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+          </button>
+          <div class="password">{{this}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {% endraw %}
+  </script>
   <script src="/static/js/jquery-2.1.4.min.js"></script>
   <script src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/handlebars.min.js"></script>
   <script src="/static/js/clipboard.min.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
