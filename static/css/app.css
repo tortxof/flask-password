@@ -1,3 +1,7 @@
+.close {
+  font-size: 28pt;
+}
+
 .username, .password {
   display: inline-block;
 }
