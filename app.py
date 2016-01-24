@@ -12,10 +12,11 @@ import database
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time', 'refresh')) and
+        if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time', 'refresh', 'hide_passwords')) and
            session['salt'] == db.get_user_salt(session['user_id']) and
            session['time'] >= int(time.time())):
             session['time'] = int(time.time()) + (db.get_user_session_time(session['user_id']) * 60)
+            session['hide_passwords'] = db.get_user_hide_passwords(session['user_id'])
             session['refresh'] = db.get_user_session_time(session['user_id']) * 60 + 30
             g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
@@ -81,6 +82,7 @@ def login():
             session['salt'] = salt
             session['time'] = int(time.time()) + (db.get_user_session_time(user_id) * 60)
             session['refresh'] = db.get_user_session_time(session['user_id']) * 60 + 30
+            session['hide_passwords'] = db.get_user_hide_passwords(user_id)
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
@@ -254,15 +256,22 @@ def generate_passwords_json():
 def user_info():
     if request.method == 'POST':
         session_time = request.form.get('session_time')
+        hide_passwords = request.form.get('hide_passwords')
         try:
             session_time = int(session_time)
         except ValueError:
             flash('session_time must be an integer.')
             return redirect(url_for('index'))
+        try:
+            hide_passwords = bool(hide_passwords)
+        except ValueError:
+            flash('Error while casting hide_passwords to bool.')
+            return redirect(url_for('index'))
         if session_time < 1:
             session_time = 1
         db.set_user_session_time(session.get('user_id'), session_time)
-        flash('session_time updated.')
+        db.set_user_hide_passwords(session.get('user_id'), hide_passwords)
+        flash('Preferences updated.')
         return redirect(url_for('index'))
     else:
         user = db.user_info(session.get('user_id'))

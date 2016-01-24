@@ -28,7 +28,7 @@
         <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{ record.password }}">
           <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
         </button>
-        <div class="password">{{ record.password }}</div>
+        <div class="password">{% if session.hide_passwords %}{% for i in range(8) %}&bullet;{% endfor %}{% else %}{{ record.password }}{% endif %}</div>
       </div>
     </div>
 

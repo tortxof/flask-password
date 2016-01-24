@@ -1,10 +1,35 @@
 {% extends 'layout.html' %}
 {% block content %}
-<form class="form-inline" action="/user" method="post">
-  <p>username: <samp>{{ session.username }}</samp></p>
-  <p>user_id: <samp>{{ session.user_id }}</samp></p>
-  <p>session_time: <input class="form-control" type="text" name="session_time" value="{{ user.session_time }}"> minutes</p>
-  <p>Number of Records: {{ user.num_records }}</p>
-  <button class="btn btn-default" type="submit">Save Changes</button>
+<form class="form-horizontal" action="/user" method="post">
+  <div class="form-group">
+    <label class="col-sm-2">username</label>
+    <div class="col-sm-10"><samp>{{ session.username }}</samp></div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2">user_id</label>
+    <div class="col-sm-10"><samp>{{ session.user_id }}</samp></div>
+  </div>
+  <div class="form-group">
+    <label for="session_time" class="col-sm-2">Session Time (minutes)</label>
+    <div class="col-sm-10">
+      <input class="form-control" id="session_time" type="text" name="session_time" value="{{ user.session_time }}">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2">Number of Records</label>
+    <div class="col-sm-10">{{ user.num_records }}</div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="hide_passwords" value="true"{% if user.hide_passwords %} checked{% endif %}> hide passwords
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <button class="btn btn-default" type="submit">Save Changes</button>
+  </div>
 </form>
 {% endblock %}

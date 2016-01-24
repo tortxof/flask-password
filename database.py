@@ -29,12 +29,16 @@ class Database(object):
                      '(id text primary key not null, name, query, user_id)')
         conn.execute('create table if not exists users '
                      '(id text primary key not null, '
-                     'username unique, password, salt, key, session_time)')
+                     'username unique, password, salt, key, session_time, hide_passwords)')
         if not 'session_time' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
             conn.execute('alter table users add column session_time')
             conn.execute('update users set session_time=?', (10,))
+        if not 'hide_passwords' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
+            conn.execute('alter table users add column hide_passwords')
+            conn.execute('update users set hide_passwords=?', (True,))
         conn.commit()
         conn.close()
+        self.rebuild_fts()
 
     # Crypto functions
 
@@ -153,11 +157,12 @@ class Database(object):
                 'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
                 'salt': salt,
                 'key': dbkey,
-                'session_time': 10}
+                'session_time': 10,
+                'hide_passwords': True}
         conn = self.db_conn()
         cur = conn.cursor()
         try:
-            cur.execute('insert into users values (:id, :username, :password, :salt, :key, :session_time)', user)
+            cur.execute('insert into users values (:id, :username, :password, :salt, :key, :session_time, :hide_passwords)', user)
         except sqlite3.IntegrityError:
             return False
         rowid = cur.lastrowid
@@ -217,6 +222,19 @@ class Database(object):
         conn.commit()
         conn.close()
 
+    def get_user_hide_passwords(self, user_id):
+        conn = self.db_conn()
+        hide_passwords = conn.execute('select hide_passwords from users where id=?', (user_id,)).fetchone()['hide_passwords']
+        conn.close()
+        return hide_passwords
+
+    def set_user_hide_passwords(self, user_id, hide_passwords):
+        conn = self.db_conn()
+        conn.execute('update users set hide_passwords=:hide_passwords where id=:id',
+                     {'id': user_id, 'hide_passwords': bool(hide_passwords)})
+        conn.commit()
+        conn.close()
+
     def change_password(self, form, username, user_id, key):
         if not self.check_password(username, form.get('oldpw')):
             return False
@@ -242,6 +260,7 @@ class Database(object):
         conn = self.db_conn()
         user['num_records'] = conn.execute('select count(id) from passwords where user_id=?', (user_id,)).fetchone()[0]
         user['session_time'] = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
+        user['hide_passwords'] = conn.execute('select hide_passwords from users where id=?', (user_id,)).fetchone()['hide_passwords']
         conn.close()
         return user
 
