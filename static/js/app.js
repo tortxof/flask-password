@@ -19,7 +19,7 @@ $(document).ready(function() {
     $(elem).append(success_elem);
     $(success_elem).delay(1000).fadeOut(500, function() {
       success_elem.parentNode.removeChild(success_elem);
-    })
+    });
   }
 
   var passwords_template = Handlebars.compile($('#passwords_template').html());
@@ -41,6 +41,19 @@ $(document).ready(function() {
   var clipboard = new Clipboard('.cb-copy');
   clipboard.on('success', function(e) {
     showTooltip(e.trigger);
+  });
+
+  $('.show-pw').mousedown(function() {
+    var password = $(this).prev('.cb-copy').data('clipboard-text');
+    $(this).next('.password').text(password);
+  });
+
+  $('.show-pw').mouseup(function() {
+    var bullets = '';
+    for (var i=0; i<8; i++) {
+      bullets += '&bullet;';
+    }
+    $(this).next('.password').html(bullets);
   });
 
 });

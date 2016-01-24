@@ -28,7 +28,18 @@
         <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{ record.password }}">
           <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
         </button>
-        <div class="password">{% if session.hide_passwords %}{% for i in range(8) %}&bullet;{% endfor %}{% else %}{{ record.password }}{% endif %}</div>
+        {% if session.hide_passwords %}
+        <button type="button" class="btn btn-default show-pw">
+          <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+        </button>
+        {% endif %}
+        <div class="password">
+          {% if session.hide_passwords %}
+            {% for i in range(8) %}&bullet;{% endfor %}
+          {% else %}
+            {{ record.password }}
+          {% endif %}
+        </div>
       </div>
     </div>
 
