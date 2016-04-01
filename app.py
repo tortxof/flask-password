@@ -1,5 +1,6 @@
 import os
 from functools import wraps
+import base64
 import json
 import time
 
