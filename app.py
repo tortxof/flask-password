@@ -5,19 +5,32 @@ import json
 import time
 
 
-from flask import Flask, render_template, session, g, flash, request, redirect, url_for, jsonify
+from flask import (
+    Flask, render_template, session, g, flash,
+    request, redirect, url_for, jsonify
+    )
 
 import database
 
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if (all(x in session for x in ('username', 'user_id', 'key', 'salt', 'time', 'refresh', 'hide_passwords')) and
-           session['salt'] == db.get_user_salt(session['user_id']) and
-           session['time'] >= int(time.time())):
-            session['time'] = int(time.time()) + (db.get_user_session_time(session['user_id']) * 60)
-            session['hide_passwords'] = db.get_user_hide_passwords(session['user_id'])
-            session['refresh'] = db.get_user_session_time(session['user_id']) * 60 + 30
+        session_keys = (
+            'username', 'user_id', 'key', 'salt',
+            'time', 'refresh', 'hide_passwords'
+            )
+        if (
+                all(x in session for x in session_keys) and
+                session['salt'] == db.get_user_salt(session['user_id']) and
+                session['time'] >= int(time.time())
+                ):
+            session['time'] = \
+                int(time.time()) + \
+                (db.get_user_session_time(session['user_id']) * 60)
+            session['hide_passwords'] = \
+                db.get_user_hide_passwords(session['user_id'])
+            session['refresh'] = \
+                db.get_user_session_time(session['user_id']) * 60 + 30
             g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
@@ -80,8 +93,10 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
-            session['time'] = int(time.time()) + (db.get_user_session_time(user_id) * 60)
-            session['refresh'] = db.get_user_session_time(session['user_id']) * 60 + 30
+            session['time'] = \
+                int(time.time()) + (db.get_user_session_time(user_id) * 60)
+            session['refresh'] = \
+                db.get_user_session_time(session['user_id']) * 60 + 30
             session['hide_passwords'] = db.get_user_hide_passwords(user_id)
             flash('You are logged in.')
             return redirect(url_for('index'))
@@ -130,7 +145,8 @@ def save_search():
 @login_required
 def edit_search():
     if 'delete' in request.form:
-        search = db.searches_delete(request.form.get('id'), session.get('user_id'))
+        search = db.searches_delete(request.form.get('id'),
+                                    session.get('user_id'))
         flash('Deleted saved search.')
         return redirect(url_for('index'))
     else:
@@ -168,12 +184,16 @@ def add_record():
 def delete_record(password_id=None):
     if request.method == 'POST':
         password_id = request.form.get('password_id')
-        record = db.delete_password(password_id, session.get('user_id'), session.get('key'))
+        record = db.delete_password(password_id,
+                                    session.get('user_id'),
+                                    session.get('key'))
         flash('Record deleted.')
         return render_template('records.html', records=[record])
     else:
         flash('Are you sure you want to delete this record?')
-        record = db.get(password_id, session.get('user_id'), session.get('key'))
+        record = db.get(password_id,
+                        session.get('user_id'),
+                        session.get('key'))
         return render_template('delete_record.html', record=record)
 
 @app.route('/edit', methods=['POST'])
@@ -187,14 +207,19 @@ def edit_record(password_id=None):
         flash('Record updated.')
         return render_template('records.html', records=[record])
     else:
-        record = db.get(password_id, session.get('user_id'), session.get('key'))
+        record = db.get(password_id,
+                        session.get('user_id'),
+                        session.get('key'))
         return render_template('edit_record.html', record=record)
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     if request.method == 'POST':
-        if db.change_password(request.form.to_dict(), session.get('username'), session.get('user_id'), session.get('key')):
+        if db.change_password(request.form.to_dict(),
+                              session.get('username'),
+                              session.get('user_id'),
+                              session.get('key')):
             flash('Password change successfull')
         else:
             flash('There was an error.')
@@ -238,7 +263,9 @@ def generate_passwords():
     for i in range(24):
         passwords.append(db.pwgen())
         pins.append(db.pingen())
-    return render_template('generate_passwords.html', passwords=passwords, pins=pins)
+    return render_template('generate_passwords.html',
+                           passwords=passwords,
+                           pins=pins)
 
 @app.route('/generate/json')
 @login_required
@@ -279,7 +306,9 @@ def user_info():
 
 @app.route('/about')
 def about():
-    return render_template('about.html', version=app.config.get('GIT_VERSION'), hide_search=True)
+    return render_template('about.html',
+                           version=app.config.get('GIT_VERSION'),
+                           hide_search=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
