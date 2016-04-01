@@ -1,5 +1,4 @@
 import os
-import stat
 from functools import wraps
 import json
 import time
@@ -44,13 +43,12 @@ db = database.Database('/data/passwords.db')
 
 app = Flask(__name__)
 
-if not os.path.isfile('/data/key'):
-    with open('/data/key', 'wb') as f:
-        f.write(os.urandom(32))
-    os.chmod('/data/key', stat.S_IREAD)
-
-with open('/data/key', 'rb') as f:
-    app.config['SECRET_KEY'] = f.read()
+app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
+    os.environ.setdefault(
+        'SECRET_KEY',
+        base64.urlsafe_b64encode(os.urandom(24)).decode()
+        )
+    )
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
