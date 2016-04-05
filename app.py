@@ -255,7 +255,6 @@ def import_records():
         return render_template('import_records.html', hide_search=True)
 
 @app.route('/generate')
-@login_required
 def generate_passwords():
     passwords = []
     pins = []
@@ -267,7 +266,6 @@ def generate_passwords():
                            pins=pins)
 
 @app.route('/generate/json')
-@login_required
 def generate_passwords_json():
     passwords = []
     pins = []
