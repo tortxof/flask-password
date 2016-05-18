@@ -23,11 +23,11 @@ $(document).ready(function() {
   }
 
   var passwords_template = Handlebars.compile($('#passwords_template').html());
-  var pins_template = Handlebars.compile($('#pins_template').html());
   function renderPasswords() {
     $.getJSON('/generate/json', function(pw_json) {
-      var passwords_html = passwords_template(pw_json);
-      passwords_html += pins_template(pw_json);
+      var passwords_html = passwords_template(pw_json.passwords);
+      passwords_html += passwords_template(pw_json.pins);
+      passwords_html += passwords_template(pw_json.keys);
       $('#genpw-modal-body').html(passwords_html);
     });
   }

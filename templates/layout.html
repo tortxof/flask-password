@@ -111,29 +111,13 @@
     {% raw %}
     <div class="panel panel-default">
       <div class="panel-body">
-        {{#each passwords}}
+        {{#each this}}
           <div class="well generated">
             <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{this}}">
               <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
             </button>
             <div class="password">{{this}}</div>
           </div>
-        {{/each}}
-      </div>
-    </div>
-    {% endraw %}
-  </script>
-  <script id="pins_template" type="text/x-handlebars-template">
-    {% raw %}
-    <div class="panel panel-default">
-      <div class="panel-body">
-        {{#each pins}}
-        <div class="well generated">
-          <button type="button" class="btn btn-default cb-copy" data-clipboard-text="{{this}}">
-            <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
-          </button>
-          <div class="password">{{this}}</div>
-        </div>
         {{/each}}
       </div>
     </div>
