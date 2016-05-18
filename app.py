@@ -256,27 +256,20 @@ def import_records():
 
 @app.route('/generate')
 def generate_passwords():
-    passwords = []
-    pins = []
-    for i in range(24):
-        passwords.append(db.pwgen())
-        pins.append(db.pingen())
-    keys = [db.keygen() for i in range(2)]
-    return render_template('generate_passwords.html',
-                           passwords=passwords,
-                           pins=pins,
-                           keys=keys)
+    return render_template(
+        'generate_passwords.html',
+        passwords = [db.pwgen() for i in range(24)],
+        pins = [db.pingen() for i in range(24)],
+        keys = [db.keygen() for i in range(6)]
+        )
 
 @app.route('/generate/json')
 def generate_passwords_json():
-    passwords = []
-    pins = []
-    for i in range(6):
-        passwords.append(db.pwgen())
-    for i in range(10):
-        pins.append(db.pingen())
-    keys = [db.keygen() for i in range(2)]
-    return jsonify(passwords=passwords, pins=pins, keys=keys)
+    return jsonify(
+        passwords = [db.pwgen() for i in range(6)],
+        pins = [db.pingen() for i in range(10)],
+        keys = [db.keygen() for i in range(2)]
+        )
 
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
