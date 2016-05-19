@@ -1,5 +1,8 @@
 $(document).ready(function() {
 
+  // Workaround for clipboard.js in bootstrap modal.
+  $.fn.modal.Constructor.prototype.enforceFocus = function() {};
+
   $('#newusername').on('change keyup', function() {
     var username = $(this).val();
     $.getJSON('/username-available', {user: username}, function(data) {
