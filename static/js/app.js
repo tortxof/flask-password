@@ -31,6 +31,7 @@ $(document).ready(function() {
       var passwords_html = passwords_template(pw_json.passwords);
       passwords_html += passwords_template(pw_json.pins);
       passwords_html += passwords_template(pw_json.keys);
+      passwords_html += passwords_template(pw_json.phrases);
       $('#genpw-modal-body').html(passwords_html);
     });
   }

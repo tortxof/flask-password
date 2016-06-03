@@ -15,6 +15,8 @@ import markov
 class Database(object):
     def __init__(self, dbfile):
         self.markov = markov.Markov()
+        with open('wordlist.txt') as f:
+            self.wordlist = tuple(f)
         self.dbfile = dbfile
         conn = self.db_conn()
         conn.execute('create table if not exists passwords '
@@ -94,6 +96,10 @@ class Database(object):
         for i in range(l):
             pin += str(sys_rand.randrange(10))
         return pin
+
+    def phrasegen(self, l=6):
+        sys_rand = random.SystemRandom()
+        return ' '.join(sys_rand.choice(self.wordlist) for _ in range(l))
 
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''

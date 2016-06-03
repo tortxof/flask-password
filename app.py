@@ -260,7 +260,8 @@ def generate_passwords():
         'generate_passwords.html',
         passwords = [db.pwgen() for i in range(24)],
         pins = [db.pingen() for i in range(24)],
-        keys = [db.keygen() for i in range(6)]
+        keys = [db.keygen() for i in range(6)],
+        phrases = [db.phrasegen() for i in range(2)]
         )
 
 @app.route('/generate/json')
@@ -268,7 +269,8 @@ def generate_passwords_json():
     return jsonify(
         passwords = [db.pwgen() for i in range(6)],
         pins = [db.pingen() for i in range(10)],
-        keys = [db.keygen() for i in range(2)]
+        keys = [db.keygen() for i in range(2)],
+        phrases = [db.phrasegen() for i in range(2)]
         )
 
 @app.route('/user', methods=['GET', 'POST'])
