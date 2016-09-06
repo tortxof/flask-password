@@ -16,7 +16,7 @@ class Database(object):
     def __init__(self, dbfile):
         self.markov = markov.Markov()
         with open('wordlist.txt') as f:
-            self.wordlist = tuple(f)
+            self.wordlist = tuple(word.strip() for word in f)
         self.dbfile = dbfile
         conn = self.db_conn()
         conn.execute('create table if not exists passwords '
