@@ -1,8 +1,6 @@
 import string
 from collections import defaultdict
 import random
-import itertools
-import bisect
 
 def pairwise(iterable):
     """
@@ -34,14 +32,10 @@ class Markov(object):
 
     def gen_password(self, l=16):
         password = []
-        state = self.sys_rand.choice(string.ascii_lowercase)
-        password.append(state)
+        password.append(self.sys_rand.choice(string.ascii_lowercase))
         while len(password) < l:
-            choices, weights = zip(*self.counts[state].items())
-            cumdist = list(itertools.accumulate(weights))
-            x = self.sys_rand.random() * cumdist[-1]
-            state = choices[bisect.bisect(cumdist, x)]
-            password.append(state)
+            choices, weights = zip(*self.counts[password[-1]].items())
+            password.append(self.sys_rand.choices(choices, weights=weights)[0])
         cap, num = self.sys_rand.sample(range(len(password)), 2)
         password[num] = str(self.sys_rand.randrange(10))
         password[cap] = password[cap].upper()
