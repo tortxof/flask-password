@@ -11,7 +11,7 @@ def pairwise(iterable):
     """
     iterator = iter(iterable)
     try:
-        a = iterator.__next__()
+        a = next(iterator)
     except StopIteration:
         return
     for b in iterator:
