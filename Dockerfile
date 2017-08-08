@@ -1,4 +1,4 @@
-FROM python:3.4
+FROM python:3.6
 MAINTAINER Daniel Jones <tortxof@gmail.com>
 
 RUN groupadd -r app && useradd -r -g app app
