@@ -195,8 +195,8 @@ def delete_record(password_id=None):
                         session.get('key'))
         return render_template('delete_record.html', record=record)
 
-@app.route('/edit', methods=['POST'])
 @app.route('/edit/<password_id>')
+@app.route('/edit', methods=['POST'])
 @login_required
 def edit_record(password_id=None):
     if request.method == 'POST':
