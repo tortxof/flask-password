@@ -62,7 +62,7 @@ class Database(object):
         return base64.urlsafe_b64encode(os.urandom(l)).decode()
 
     def pwgen(self, l=16):
-        return self.markov.gen_password(l=l)
+        return markov.Markov().gen_password(l=l)
 
     def pingen(self, l=4):
         sys_rand = random.SystemRandom()
