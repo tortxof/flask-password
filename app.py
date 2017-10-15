@@ -26,7 +26,17 @@ with open('.git/refs/heads/master') as f:
 
 import database
 
-db = database.Database('/data/passwords.db')
+db = database.Database()
+
+@app.before_request
+def before_request():
+    g.database = database.database
+    g.database.get_conn()
+
+@app.after_request
+def after_request(request):
+    g.database.close()
+    return request
 
 def login_required(f):
     @wraps(f)
