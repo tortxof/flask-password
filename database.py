@@ -15,34 +15,6 @@ import markov
 from models import database, User, Password, Search
 
 class Database(object):
-    def __init__(self, dbfile):
-        self.markov = markov.Markov()
-        with open('wordlist.txt') as f:
-            self.wordlist = tuple(word.strip() for word in f)
-        self.dbfile = dbfile
-        conn = self.db_conn()
-        conn.execute('create table if not exists passwords '
-                     '(id text primary key not null, '
-                     'title, url, username, password, other, user_id)')
-        conn.execute('create virtual table if not exists passwords_fts '
-                     'using fts4(content="passwords", '
-                     'id, title, url, username, password, other, user_id, '
-                     'notindexed=id, notindexed=password, notindexed=other, '
-                     'notindexed=user_id)')
-        conn.execute('create table if not exists searches '
-                     '(id text primary key not null, name, query, user_id)')
-        conn.execute('create table if not exists users '
-                     '(id text primary key not null, '
-                     'username unique, password, salt, key, session_time, hide_passwords)')
-        if not 'session_time' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
-            conn.execute('alter table users add column session_time')
-            conn.execute('update users set session_time=?', (10,))
-        if not 'hide_passwords' in (i['name'] for i in conn.execute('pragma table_info(users)').fetchall()):
-            conn.execute('alter table users add column hide_passwords')
-            conn.execute('update users set hide_passwords=?', (True,))
-        conn.commit()
-        conn.close()
-        self.rebuild_fts()
 
     # Crypto functions
 
