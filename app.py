@@ -10,7 +10,23 @@ from flask import (
     request, redirect, url_for, jsonify
     )
 
+app = Flask(__name__)
+
+app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
+    os.environ.setdefault(
+        'SECRET_KEY',
+        base64.urlsafe_b64encode(os.urandom(24)).decode()
+        )
+    )
+
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+
+with open('.git/refs/heads/master') as f:
+    app.config['GIT_VERSION'] = f.read()[:8]
+
 import database
+
+db = database.Database('/data/passwords.db')
 
 def login_required(f):
     @wraps(f)
@@ -39,24 +55,6 @@ def login_required(f):
             flash('You are not logged in.')
             return redirect(url_for('login'))
     return wrapper
-
-db = database.Database('/data/passwords.db')
-
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
-    os.environ.setdefault(
-        'SECRET_KEY',
-        base64.urlsafe_b64encode(os.urandom(24)).decode()
-        )
-    )
-
-app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-
-with open('.git/refs/heads/master') as f:
-    app.config['GIT_VERSION'] = f.read()[:8]
-
-# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 
 @app.route('/')
 @login_required
