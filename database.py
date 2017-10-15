@@ -73,7 +73,9 @@ class Database(object):
 
     def phrasegen(self, l=6):
         sys_rand = random.SystemRandom()
-        return ' '.join(sys_rand.choice(self.wordlist) for _ in range(l))
+        with open('wordlist.txt') as f:
+            wordlist = tuple(word.strip() for word in f)
+        return ' '.join(sys_rand.choice(wordlist) for _ in range(l))
 
     def rows_to_dicts(self, rows):
         '''Takes a list of sqlite3.Row and returns a list of dict'''
