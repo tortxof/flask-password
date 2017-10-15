@@ -131,88 +131,77 @@ class Database(object):
         salt = self.b64_encode(os.urandom(16))
         dk = self.kdf(form.get('password'), salt)
         dbkey = self.encrypt(dk, dbkey)
-        user = {'id': self.new_id(),
-                'username': form.get('username'),
-                'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
-                'salt': salt,
-                'key': dbkey,
-                'session_time': 10,
-                'hide_passwords': True}
-        conn = self.db_conn()
-        cur = conn.cursor()
+        user_data = {
+            'username': form.get('username'),
+            'password': generate_password_hash(form.get('password'), method='pbkdf2:sha256:10000'),
+            'salt': salt,
+            'key': dbkey,
+        }
         try:
-            cur.execute('insert into users values (:id, :username, :password, :salt, :key, :session_time, :hide_passwords)', user)
-        except sqlite3.IntegrityError:
+            user = User.create(**user_data)
+        except IntegrityError:
             return False
-        rowid = cur.lastrowid
-        username = conn.execute('select username from users where rowid=?', (rowid,)).fetchone()[0]
-        conn.commit()
-        conn.close()
-        return username
+        return user.username
 
     def username_available(self, username):
         if not self.username_valid(username):
             return False
-        conn = self.db_conn()
-        n = conn.execute('select count(id) from users where username=?', (username,)).fetchone()[0]
-        conn.close()
-        return n == 0
+        try:
+            User.get(User.username == username)
+        except User.DoesNotExist:
+            return True
+        else:
+            return False
 
     def check_password(self, username, password):
-        conn = self.db_conn()
-        password_hash = conn.execute('select password from users where username=?', (username,)).fetchone()
-        conn.close()
-        if not password_hash:
+        try:
+            user = User.get(User.username == username)
+        except User.DoesNotExist:
             return False
-        else:
-            password_hash = password_hash[0]
-        return check_password_hash(password_hash, password)
+        return check_password_hash(user.password, password)
 
     def get_user_salt(self, user_id):
-        conn = self.db_conn()
-        salt = conn.execute('select salt from users where id=?', (user_id,)).fetchone()['salt']
-        conn.close()
-        return salt
+        try:
+            user = User.get(User.id == user_id)
+        except User.DoesNotExist:
+            return None
+        return user.salt
 
     def get_user_key(self, user_id, password, salt):
         dk = self.kdf(password, salt)
-        conn = self.db_conn()
-        dbkey = conn.execute('select key from users where id=?', (user_id,)).fetchone()['key']
-        conn.close()
-        dbkey = self.decrypt(dk, dbkey)
-        return dbkey
+        try:
+            user = User.get(User.id == user_id)
+        except User.DoesNotExist:
+            return None
+        return self.decrypt(dk, user.key)
 
     def get_user_id(self, username):
-        conn = self.db_conn()
-        user_id = conn.execute('select id from users where username=?', (username,)).fetchone()['id']
-        conn.close()
-        return user_id
+        try:
+            user = User.get(User.username == username)
+        except User.DoesNotExist:
+            return None
+        return user.id
 
     def get_user_session_time(self, user_id):
-        conn = self.db_conn()
-        session_time = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
-        conn.close()
-        return session_time
+        try:
+            user = User.get(User.id == user_id)
+        except User.DoesNotExist:
+            return None
+        return user.session_time
 
     def set_user_session_time(self, user_id, session_time):
-        conn = self.db_conn()
-        conn.execute('update users set session_time=:session_time where id=:id',
-                     {'id': user_id, 'session_time': int(session_time)})
-        conn.commit()
-        conn.close()
+        user = User.get(User.id == user_id)
+        user.session_time = session_time
+        user.save()
 
     def get_user_hide_passwords(self, user_id):
-        conn = self.db_conn()
-        hide_passwords = conn.execute('select hide_passwords from users where id=?', (user_id,)).fetchone()['hide_passwords']
-        conn.close()
-        return hide_passwords
+        user = User.get(User.id == user_id)
+        return user.hide_passwords
 
     def set_user_hide_passwords(self, user_id, hide_passwords):
-        conn = self.db_conn()
-        conn.execute('update users set hide_passwords=:hide_passwords where id=:id',
-                     {'id': user_id, 'hide_passwords': bool(hide_passwords)})
-        conn.commit()
-        conn.close()
+        user = User.get(User.id == user_id)
+        user.hide_passwords = hide_passwords
+        user.save()
 
     def change_password(self, form, username, user_id, key):
         if not self.check_password(username, form.get('oldpw')):
@@ -224,24 +213,25 @@ class Database(object):
         salt = self.b64_encode(os.urandom(16))
         dk = self.kdf(form.get('newpw1'), salt)
         dbkey = self.encrypt(dk, key)
-        user = {'id': user_id,
-                'password': generate_password_hash(form.get('newpw1'), method='pbkdf2:sha256:10000'),
-                'salt': salt,
-                'key': dbkey}
-        conn = self.db_conn()
-        conn.execute('update users set password=:password, salt=:salt, key=:key where id=:id', user)
-        conn.commit()
-        conn.close()
+        user_data = {
+            'password': generate_password_hash(form.get('newpw1'), method='pbkdf2:sha256:10000'),
+            'salt': salt,
+            'key': dbkey,
+        }
+        user = User.get(User.id == user_id)
+        user.password = user_data['password']
+        user.salt = user_data['salt']
+        user.key = user_data['key']
+        user.save()
         return True
 
     def user_info(self, user_id):
-        user = {}
-        conn = self.db_conn()
-        user['num_records'] = conn.execute('select count(id) from passwords where user_id=?', (user_id,)).fetchone()[0]
-        user['session_time'] = conn.execute('select session_time from users where id=?', (user_id,)).fetchone()['session_time']
-        user['hide_passwords'] = conn.execute('select hide_passwords from users where id=?', (user_id,)).fetchone()['hide_passwords']
-        conn.close()
-        return user
+        user = User.get(User.id == user_id)
+        return {
+            'num_records': Password.select().where(Password.user == user).count(),
+            'session_time': user.session_time,
+            'hide_passwords': user.hide_passwords,
+        }
 
     # searches table functions
 
