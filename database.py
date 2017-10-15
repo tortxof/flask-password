@@ -12,6 +12,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 import markov
 
+from models import database, User, Password, Search
+
 class Database(object):
     def __init__(self, dbfile):
         self.markov = markov.Markov()
