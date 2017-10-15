@@ -101,11 +101,7 @@ def login():
             flash('Incorrect username or password.')
             return render_template('login.html')
     else:
-        if db.is_new():
-            flash('No users have been added yet. Add the first user.')
-            return redirect(url_for('new_user'))
-        else:
-            return render_template('login.html')
+        return render_template('login.html')
 
 @app.route('/logout')
 def logout():

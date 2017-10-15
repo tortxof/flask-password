@@ -110,12 +110,6 @@ class Database(object):
         conn.row_factory = sqlite3.Row
         return conn
 
-    def is_new(self):
-        conn = self.db_conn()
-        num_users = conn.execute('select count(id) from users').fetchone()[0]
-        conn.close()
-        return num_users == 0
-
     def username_valid(self, username):
         if not 2 < len(username) <= 64:
             return False
