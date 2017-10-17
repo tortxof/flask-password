@@ -43,6 +43,18 @@ class Password(BaseModel):
     search_content = TSVectorField(default='')
     user = ForeignKeyField(User)
 
+    def update_search_content(self):
+        search_content = ' '.join([
+            str(getattr(self, field)) for field in
+            (
+                'title',
+                'url',
+                'username',
+            )
+        ])
+        self.search_content = fn.to_tsvector('simple', search_content)
+        self.save()
+
 class Search(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
     name = CharField()
