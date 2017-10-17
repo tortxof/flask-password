@@ -1,3 +1,5 @@
 uwsgi
 flask
 pycrypto
+peewee
+psycopg2
