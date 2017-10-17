@@ -57,9 +57,6 @@ class Database(object):
     def b64_encode(self, i):
         return base64.urlsafe_b64encode(i).decode()
 
-    def new_id(self):
-        return self.b64_encode(os.urandom(24))
-
     def keygen(self, l=24):
         return base64.urlsafe_b64encode(os.urandom(l)).decode()
 
