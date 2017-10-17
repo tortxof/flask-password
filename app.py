@@ -176,8 +176,11 @@ def all_records():
 @login_required
 def add_record():
     record = request.form.to_dict()
-    record['user_id'] = session.get('user_id')
-    record = db.create_password(record, session.get('key'))
+    record = db.create_password(
+        record,
+        session.get('user_id'),
+        session.get('key')
+    )
     flash('Record added.')
     return render_template('add_record.html', record=record)
 
@@ -205,8 +208,11 @@ def delete_record(password_id=None):
 def edit_record(password_id=None):
     if request.method == 'POST':
         record = request.form.to_dict()
-        record['user_id'] = session.get('user_id')
-        record = db.update_password(record, session.get('key'))
+        record = db.update_password(
+            record,
+            session.get('user_id'),
+            session.get('key'),
+        )
         flash('Record updated.')
         return render_template('records.html', records=[record])
     else:
