@@ -76,10 +76,6 @@ class Database(object):
             wordlist = tuple(word.strip() for word in f)
         return ' '.join(sys_rand.choice(wordlist) for _ in range(l))
 
-    def rows_to_dicts(self, rows):
-        '''Takes a list of sqlite3.Row and returns a list of dict'''
-        return [dict(row) for row in rows]
-
     def db_conn(self):
         conn = sqlite3.connect(self.dbfile)
         conn.row_factory = sqlite3.Row
