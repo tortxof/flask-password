@@ -15,6 +15,8 @@ import markov
 from models import database, User, Password, Search
 
 class Database(object):
+    def __init__(self):
+        self.markov = markov.Markov()
 
     # Crypto functions
 
@@ -62,7 +64,7 @@ class Database(object):
         return base64.urlsafe_b64encode(os.urandom(l)).decode()
 
     def pwgen(self, l=16):
-        return markov.Markov().gen_password(l=l)
+        return self.markov.gen_password(l=l)
 
     def pingen(self, l=4):
         sys_rand = random.SystemRandom()
