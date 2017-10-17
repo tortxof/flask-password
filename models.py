@@ -8,7 +8,7 @@ def gen_id():
     return secrets.token_urlsafe(24)
 
 database = PostgresqlExtDatabase(
-    os.environ.get('PG_NAME', 'members'),
+    os.environ.get('PG_NAME', 'passwords'),
     host = os.environ.get('PG_HOST', 'localhost'),
     user = os.environ.get('PG_USER', 'postgres'),
     password = os.environ.get('PG_PASSWORD', 'postgres'),
