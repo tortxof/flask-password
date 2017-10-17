@@ -15,6 +15,11 @@ database = PostgresqlExtDatabase(
     register_hstore = False,
 )
 
+def migrate():
+    database.get_conn()
+    database.create_tables([User, Password, Search], safe=True)
+    database.close()
+
 class BaseModel(Model):
     class Meta:
         database = database
