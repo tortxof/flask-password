@@ -154,8 +154,7 @@ def edit_search():
         return redirect(url_for('index'))
     else:
         search = request.form.to_dict()
-        search['user_id'] = session.get('user_id')
-        search = db.searches_update(search)
+        search = db.searches_update(search, session.get('user_id'))
         flash('Changes saved.')
         return redirect(url_for('index'))
 
