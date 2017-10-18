@@ -15,7 +15,7 @@ from playhouse.shortcuts import model_to_dict
 
 import markov
 
-from models import database, User, Password, Search, SQL, fn
+from models import database, User, Password, Search, SQL, fn, ProgrammingError
 
 class Database(object):
     def __init__(self):
@@ -266,15 +266,25 @@ class Database(object):
 
     def search(self, query, user_id, key):
         user = User.get(User.id == user_id)
-        records = Password.select().where(
-            Password.user == user,
-            Expression(
-                Password.search_content,
-                OP.TS_MATCH,
-                fn.plainto_tsquery('simple', query),
-            ),
-            # Password.search_content.match(('simple', query)),
-        ).dicts()
+        try:
+            records = list(Password.select().where(
+                Password.user == user,
+                Password.search_content.match(('simple', query)),
+            ).dicts())
+        except ProgrammingError:
+            database.rollback()
+            try:
+                records = list(Password.select().where(
+                    Password.user == user,
+                    Expression(
+                        Password.search_content,
+                        OP.TS_MATCH,
+                        fn.plainto_tsquery('simple', query),
+                    ),
+                ).dicts())
+            except ProgrammingError:
+                database.rollback()
+                return []
         return [
             self.decrypt_record(record, key)
             for record in records
