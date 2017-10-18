@@ -10,9 +10,12 @@ from Crypto.Cipher import AES
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from peewee import Expression, OP
+from playhouse.shortcuts import model_to_dict
+
 import markov
 
-from models import database, User, Password, Search
+from models import database, User, Password, Search, SQL, fn
 
 class Database(object):
     def __init__(self):
@@ -261,68 +264,84 @@ class Database(object):
 
     # passwords table functions
 
-    def rebuild_fts(self):
-        conn = self.db_conn()
-        conn.execute('insert into passwords_fts(passwords_fts) values("rebuild")')
-        conn.commit()
-        conn.close()
-
     def search(self, query, user_id, key):
-        conn = self.db_conn()
-        records = conn.execute('select * from passwords_fts where user_id=? and passwords_fts match ?', (user_id, query)).fetchall()
-        conn.close()
-        return [self.decrypt_record(record, key) for record in self.rows_to_dicts(records)]
+        user = User.get(User.id == user_id)
+        records = Password.select().where(
+            Password.user == user,
+            Expression(
+                Password.search_content,
+                OP.TS_MATCH,
+                fn.plainto_tsquery('simple', query),
+            ),
+            # Password.search_content.match(('simple', query)),
+        ).dicts()
+        return [
+            self.decrypt_record(record, key)
+            for record in records
+        ]
 
     def get(self, password_id, user_id, key):
-        conn = self.db_conn()
-        record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
-        conn.close()
-        return self.decrypt_record(dict(record), key)
+        user = User.get(User.id == user_id)
+        record = Password.get(Password.id == password_id, Password.user == user)
+        return self.decrypt_record(model_to_dict(record), key)
 
     def get_many(self, password_ids, user_id, key):
-        records = []
-        conn = self.db_conn()
-        for password_id in password_ids:
-            record = conn.execute('select * from passwords where id=? and user_id=?', (password_id, user_id)).fetchone()
-            record = self.decrypt_record(dict(record), key)
-            records.append(record)
-        conn.close()
-        return records
+        user = User.get(User.id == user_id)
+        return [
+            self.decrypt_record(
+                model_to_dict(Password.get(
+                    Password.id == password_id,
+                    Password.user == user
+                )),
+                key,
+            )
+            for password_id in password_ids
+        ]
 
     def get_all(self, user_id, key):
-        conn = self.db_conn()
-        records = conn.execute('select * from passwords where user_id=?', (user_id,)).fetchall()
-        conn.close()
-        return [self.decrypt_record(record, key) for record in self.rows_to_dicts(records)]
+        user = User.get(User.id == user_id)
+        return [
+            self.decrypt_record(
+                model_to_dict(
+                    record,
+                    recurse=False,
+                    exclude=[Password.search_content, Password.user],
+                ),
+                key,
+            )
+            for record in Password.select().where(Password.user == user)
+        ]
 
-    def create_password(self, record, key):
+    def create_password(self, record, user_id, key):
         record['password'] = self.pwgen()
-        record['id'] = self.new_id()
-        record = self.encrypt_record(record, key)
-        conn = self.db_conn()
-        conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
-        conn.commit()
-        conn.close()
-        self.rebuild_fts()
-        return self.get(record['id'], record['user_id'], key)
+        user = User.get(User.id == user_id)
+        record = Password.create(**self.encrypt_record(record, key), user=user)
+        record.update_search_content()
+        return self.decrypt_record(model_to_dict(record), key)
 
-    def update_password(self, record, key):
-        record = self.encrypt_record(record, key)
-        conn = self.db_conn()
-        conn.execute('update passwords set title=:title, url=:url, username=:username, password=:password, other=:other where id=:id and user_id=:user_id', record)
-        conn.commit()
-        conn.close()
-        self.rebuild_fts()
-        return self.get(record['id'], record['user_id'], key)
+    def update_password(self, record, user_id, key):
+        password_id = record['id']
+        del record['id']
+        user = User.get(User.id == user_id)
+        Password.update(
+            **self.encrypt_record(record, key)
+        ).where(
+            Password.id == password_id,
+            Password.user == user,
+        ).execute()
+        record = Password.get(Password.id == password_id, Password.user == user)
+        record.update_search_content()
+        return self.decrypt_record(model_to_dict(record), key)
 
     def delete_password(self, password_id, user_id, key):
-        record = self.get(password_id, user_id, key)
-        conn = self.db_conn()
-        conn.execute('delete from passwords where id=? and user_id=?', (password_id, user_id))
-        conn.commit()
-        conn.close()
-        self.rebuild_fts()
-        return record
+        user = User.get(User.id == user_id)
+        record = Password.get(
+            Password.id == password_id,
+            Password.user == user,
+        )
+        record_data = self.decrypt_record(model_to_dict(record), key)
+        record.delete_instance()
+        return record_data
 
     def import_passwords(self, records, user_id, key):
         imported_ids = {'new': [], 'updated': []}
