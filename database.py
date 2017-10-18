@@ -79,11 +79,6 @@ class Database(object):
             wordlist = tuple(word.strip() for word in f)
         return ' '.join(sys_rand.choice(wordlist) for _ in range(l))
 
-    def db_conn(self):
-        conn = sqlite3.connect(self.dbfile)
-        conn.row_factory = sqlite3.Row
-        return conn
-
     def username_valid(self, username):
         if not 2 < len(username) <= 64:
             return False
