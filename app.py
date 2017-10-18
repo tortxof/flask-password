@@ -231,6 +231,7 @@ def change_password():
             flash('Password change successfull')
         else:
             flash('There was an error.')
+            return redirect(url_for('index'))
         return redirect(url_for('logout'))
     else:
         return render_template('change_password.html', hide_search=True)
