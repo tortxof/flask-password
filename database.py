@@ -355,25 +355,42 @@ class Database(object):
 
     def import_passwords(self, records, user_id, key):
         imported_ids = {'new': [], 'updated': []}
-        conn = self.db_conn()
+        user = User.get(User.id == user_id)
         for record in records:
+            record = {
+                key: record.get(key) for key in
+                (
+                    'id',
+                    'title',
+                    'url',
+                    'username',
+                    'password',
+                    'other',
+                )
+            }
             is_new = False
-            record['user_id'] = user_id
             if not 'password' in record:
                 record['password'] = self.pwgen()
             record = self.encrypt_record(record, key)
-            if (not 'id' in record) or (record.get('id') == ''):
-                record['id'] = self.new_id()
-                is_new = True
-            elif conn.execute('select count(id) from passwords where id=?', (record['id'],)).fetchone()[0] == 0:
+            if (
+                (not 'id' in record)
+                or (record.get('id') == '')
+                or (
+                    Password.select().where(
+                        Password.id == record['id']
+                    ).count() == 0
+                )
+            ):
                 is_new = True
             if is_new:
-                conn.execute('insert into passwords values (:id, :title, :url, :username, :password, :other, :user_id)', record)
-                imported_ids['new'].append(record['id'])
+                record = Password.create(**record, user=user)
+                record.update_search_content()
+                imported_ids['new'].append(record.id)
             else:
-                conn.execute('update passwords set title=:title, url=:url, username=:username, password=:password, other=:other where id=:id and user_id=:user_id', record)
-                imported_ids['updated'].append(record['id'])
-        conn.commit()
-        conn.close()
-        self.rebuild_fts()
+                Password.update(**record, user=user).where(
+                    Password.id == record['id']
+                ).execute()
+                record = Password.get(Password.id == record['id'])
+                record.update_search_content()
+                imported_ids['updated'].append(record.id)
         return imported_ids
