@@ -231,39 +231,33 @@ class Database(object):
     # searches table functions
 
     def searches_get_all(self, user_id):
-        conn = self.db_conn()
-        searches = conn.execute('select * from searches where user_id=?', (user_id,)).fetchall()
-        conn.close()
-        return self.rows_to_dicts(searches)
+        user = User.get(User.id == user_id)
+        return Search.select().where(Search.user == user).dicts()
 
     def searches_get(self, search_id, user_id):
-        conn = self.db_conn()
-        search = conn.execute('select * from searches where id=? and user_id=?', (search_id, user_id)).fetchone()
-        conn.close()
-        return dict(search)
+        user = User.get(User.id == user_id)
+        return model_to_dict(
+            Search.get(Search.id == search_id, Search.user == user)
+        )
 
-    def searches_create(self, search):
-        search['id'] = self.new_id()
-        conn = self.db_conn()
-        conn.execute('insert into searches values(:id, :name, :query, :user_id)', search)
-        conn.commit()
-        conn.close()
-        return self.searches_get(search['id'], search['user_id'])
+    def searches_create(self, search, user_id):
+        user = User.get(User.id == user_id)
+        return Search.create(**search, user=user)
 
-    def searches_update(self, search):
-        conn = self.db_conn()
-        conn.execute('update searches set name=:name, query=:query where id=:id and user_id=:user_id', search)
-        conn.commit()
-        conn.close()
-        return self.searches_get(search['id'], search['user_id'])
+    def searches_update(self, search_data, user_id):
+        user = User.get(User.id == user_id)
+        search = Search.get(Search.id == search_data['id'], Search.user == user)
+        search.name = search_data['name']
+        search.query = search_data['query']
+        search.save()
+        return model_to_dict(search)
 
     def searches_delete(self, search_id, user_id):
-        search = self.searches_get(search_id, user_id)
-        conn = self.db_conn()
-        conn.execute('delete from searches where id=? and user_id=?', (search_id, user_id))
-        conn.commit()
-        conn.close()
-        return search
+        user = User.get(User.id == user_id)
+        search = Search.get(Search.id == search_id, Search.user == user)
+        search_data = model_to_dict(search)
+        search.delete_instance()
+        return search_data
 
     # passwords table functions
 
