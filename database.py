@@ -15,7 +15,8 @@ from playhouse.shortcuts import model_to_dict
 
 import markov
 
-from models import database, User, Password, Search, SQL, fn, ProgrammingError
+from models import (database, User, Password, Search, SQL, fn, ProgrammingError,
+                    IntegrityError)
 
 class Database(object):
     def __init__(self):
