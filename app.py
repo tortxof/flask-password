@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
-with open('.git/refs/heads/master') as f:
+with open('version') as f:
     app.config['GIT_VERSION'] = f.read()[:8]
 
 import database
