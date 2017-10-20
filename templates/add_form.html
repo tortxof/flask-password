@@ -1,7 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading"><h3 class="panel-title">Add Record</h3></div>
   <div class="panel-body">
-    <form action="/add" method="post">
+    <form action="{{url_for('add_record')}}" method="post">
       <div class="form-group">
         <label for="title">Title</label>
         <input class="form-control" type="text" name="title" id="title">
