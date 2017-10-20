@@ -3,3 +3,4 @@ flask
 pycrypto
 peewee
 psycopg2
+zappa
