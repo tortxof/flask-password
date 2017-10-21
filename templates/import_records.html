@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block content %}
-<form class="" action="/import" method="post">
+<form class="" action="{{url_for('import_records')}}" method="post">
   <div class="form-group">
     <label for="json-data">JSON Data</label>
     <textarea class="form-control" id="json-data" name="json-data"></textarea>

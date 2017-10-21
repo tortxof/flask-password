@@ -6,7 +6,7 @@
   <div class="panel-body">
     {% for search in searches %}
     <p>
-      <form class="form-inline" action="/searches/edit" method="post">
+      <form class="form-inline" action="{{url_for('edit_search')}}" method="post">
         <input type="hidden" name="id" value="{{ search.id }}">
         <div class="form-group">
           <label for="name.{{ search.id }}">Name</label>

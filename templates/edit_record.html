@@ -3,7 +3,7 @@
 <div class="panel panel-default">
   <div class="panel-heading"><h3 class="panel-title">Edit Record</h3></div>
   <div class="panel-body">
-    <form action="/edit" method="post">
+    <form action="{{url_for('edit_record')}}" method="post">
       <input type="hidden" name="id" value="{{ record.id }}">
       <div class="form-group">
         <label for="title">Title</label>
