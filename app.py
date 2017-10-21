@@ -60,7 +60,7 @@ def login_required(f):
             g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
-            for i in tuple(session.keys()):
+            for i in session_keys:
                 session.pop(i, None)
             flash('You are not logged in.')
             return redirect(url_for('login'))
