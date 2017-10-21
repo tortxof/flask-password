@@ -353,7 +353,7 @@ class Database(object):
         user = User.get(User.id == user_id)
         for record in records:
             record = {
-                key: record.get(key) for key in
+                key: record.get(key, '') for key in
                 (
                     'id',
                     'title',
@@ -363,6 +363,8 @@ class Database(object):
                     'other',
                 )
             }
+            if not record['id']:
+                del record['id']
             is_new = False
             if not 'password' in record:
                 record['password'] = self.pwgen()
