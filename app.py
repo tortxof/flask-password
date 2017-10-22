@@ -10,6 +10,8 @@ from flask import (
     request, redirect, url_for, jsonify
     )
 
+from flask_s3 import FlaskS3, create_all
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
@@ -21,12 +23,21 @@ app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
+app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
+app.config['FLASKS3_GZIP'] = True
+
+
 with open('version') as f:
     app.config['GIT_VERSION'] = f.read()[:8]
+
+s3 = FlaskS3(app)
 
 import database
 
 db = database.Database()
+
+def upload_static():
+    create_all(app)
 
 @app.before_request
 def before_request():

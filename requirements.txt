@@ -1,6 +1,7 @@
 uwsgi
 flask
 pycrypto
+flask-s3
 peewee
 psycopg2
 zappa
