@@ -4,35 +4,40 @@ import base64
 import json
 import time
 
-
 from flask import (
-    Flask, render_template, session, g, flash,
-    request, redirect, url_for, jsonify
-    )
+    Flask,
+    render_template,
+    session,
+    g,
+    flash,
+    request,
+    redirect,
+    url_for,
+    jsonify,
+)
 
 from flask_s3 import FlaskS3, create_all
+
+import database
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
     os.environ.setdefault(
         'SECRET_KEY',
-        base64.urlsafe_b64encode(os.urandom(24)).decode()
-        )
+        base64.urlsafe_b64encode(os.urandom(24)).decode(),
     )
+)
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
 app.config['FLASKS3_GZIP'] = True
 
-
 with open('version') as f:
     app.config['GIT_VERSION'] = f.read()[:8]
 
 s3 = FlaskS3(app)
-
-import database
 
 db = database.Database()
 
@@ -53,14 +58,19 @@ def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         session_keys = (
-            'username', 'user_id', 'key', 'salt',
-            'time', 'refresh', 'hide_passwords'
-            )
+            'username',
+            'user_id',
+            'key',
+            'salt',
+            'time',
+            'refresh',
+            'hide_passwords',
+        )
         if (
-                all(x in session for x in session_keys) and
-                session['salt'] == db.get_user_salt(session['user_id']) and
-                session['time'] >= int(time.time())
-                ):
+            all(x in session for x in session_keys)
+            and session['salt'] == db.get_user_salt(session['user_id'])
+            and session['time'] >= int(time.time())
+        ):
             session['time'] = \
                 int(time.time()) + \
                 (db.get_user_session_time(session['user_id']) * 60)
@@ -159,8 +169,10 @@ def save_search():
 @login_required
 def edit_search():
     if 'delete' in request.form:
-        search = db.searches_delete(request.form.get('id'),
-                                    session.get('user_id'))
+        search = db.searches_delete(
+            request.form.get('id'),
+            session.get('user_id'),
+        )
         flash('Deleted saved search.')
         return redirect(url_for('index'))
     else:
@@ -189,7 +201,7 @@ def add_record():
     record = db.create_password(
         record,
         session.get('user_id'),
-        session.get('key')
+        session.get('key'),
     )
     flash('Record added.')
     return render_template('add_record.html', record=record)
@@ -200,16 +212,20 @@ def add_record():
 def delete_record(password_id=None):
     if request.method == 'POST':
         password_id = request.form.get('password_id')
-        record = db.delete_password(password_id,
-                                    session.get('user_id'),
-                                    session.get('key'))
+        record = db.delete_password(
+            password_id,
+            session.get('user_id'),
+            session.get('key'),
+        )
         flash('Record deleted.')
         return render_template('records.html', records=[record])
     else:
         flash('Are you sure you want to delete this record?')
-        record = db.get(password_id,
-                        session.get('user_id'),
-                        session.get('key'))
+        record = db.get(
+            password_id,
+            session.get('user_id'),
+            session.get('key'),
+        )
         return render_template('delete_record.html', record=record)
 
 @app.route('/edit', methods=['POST'])
@@ -226,19 +242,23 @@ def edit_record(password_id=None):
         flash('Record updated.')
         return render_template('records.html', records=[record])
     else:
-        record = db.get(password_id,
-                        session.get('user_id'),
-                        session.get('key'))
+        record = db.get(
+            password_id,
+            session.get('user_id'),
+            session.get('key'),
+        )
         return render_template('edit_record.html', record=record)
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     if request.method == 'POST':
-        if db.change_password(request.form.to_dict(),
-                              session.get('username'),
-                              session.get('user_id'),
-                              session.get('key')):
+        if db.change_password(
+            request.form.to_dict(),
+            session.get('username'),
+            session.get('user_id'),
+            session.get('key'),
+        ):
             flash('Password change successfull')
         else:
             flash('There was an error.')
@@ -258,19 +278,29 @@ def export_records():
 def import_records():
     if request.method == 'POST':
         records = json.loads(request.form.get('json-data')).get('records')
-        imported_ids = db.import_passwords(records,
-                                           session.get('user_id'),
-                                           session.get('key'))
-        records = db.get_many(imported_ids['new'] + imported_ids['updated'],
-                              session.get('user_id'),
-                              session.get('key'))
+        imported_ids = db.import_passwords(
+            records,
+            session.get('user_id'),
+            session.get('key'),
+        )
+        records = db.get_many(
+            imported_ids['new'] + imported_ids['updated'],
+            session.get('user_id'),
+            session.get('key'),
+        )
         num_new = len(imported_ids['new'])
         num_updated = len(imported_ids['updated'])
-        flash('Imported {0} records. '
-              '{1} new records. '
-              '{2} updated records.'.format(num_new + num_updated,
-                                           num_new,
-                                           num_updated))
+        flash(
+            (
+                'Imported {0} records.'
+                ' {1} new records.'
+                ' {2} updated records.'
+            ).format(
+                num_new + num_updated,
+                num_new,
+                num_updated,
+            )
+        )
         return render_template('records.html', records=records)
     else:
         return render_template('import_records.html', hide_search=True)
@@ -282,8 +312,8 @@ def generate_passwords():
         passwords = [db.pwgen() for i in range(24)],
         pins = [db.pingen() for i in range(24)],
         keys = [db.keygen() for i in range(6)],
-        phrases = [db.phrasegen() for i in range(2)]
-        )
+        phrases = [db.phrasegen() for i in range(2)],
+    )
 
 @app.route('/generate/json')
 def generate_passwords_json():
@@ -291,8 +321,8 @@ def generate_passwords_json():
         passwords = [db.pwgen() for i in range(6)],
         pins = [db.pingen() for i in range(10)],
         keys = [db.keygen() for i in range(2)],
-        phrases = [db.phrasegen() for i in range(2)]
-        )
+        phrases = [db.phrasegen() for i in range(2)],
+    )
 
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
@@ -322,9 +352,11 @@ def user_info():
 
 @app.route('/about')
 def about():
-    return render_template('about.html',
-                           version=app.config.get('GIT_VERSION'),
-                           hide_search=True)
+    return render_template(
+        'about.html',
+        version=app.config.get('GIT_VERSION'),
+        hide_search=True,
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
