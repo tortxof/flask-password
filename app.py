@@ -22,12 +22,7 @@ import database
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = base64.urlsafe_b64decode(
-    os.environ.setdefault(
-        'SECRET_KEY',
-        base64.urlsafe_b64encode(os.urandom(24)).decode(),
-    )
-)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
