@@ -1,5 +1,6 @@
 import os
 import secrets
+from urllib.parse import urlparse
 
 from peewee import *
 from playhouse.postgres_ext import PostgresqlExtDatabase, TSVectorField
@@ -44,15 +45,16 @@ class Password(BaseModel):
     user = ForeignKeyField(User)
 
     def update_search_content(self):
-        search_content = ' '.join([
+        search_content = [
             str(getattr(self, field)) for field in
             (
                 'title',
                 'url',
                 'username',
             )
-        ])
-        self.search_content = fn.to_tsvector('simple', search_content)
+        ]
+        search_content += urlparse(self.url).netloc.split(':')[0].split('.')
+        self.search_content = fn.to_tsvector('simple', ' '.join(search_content))
         self.save()
 
 class Search(BaseModel):
