@@ -14,7 +14,7 @@ from playhouse.shortcuts import model_to_dict
 
 import markov
 
-from models import (database, User, Password, Search, SQL, fn, ProgrammingError,
+from models import (database, User, Password, Search, LoginEvent, SQL, fn, ProgrammingError,
                     IntegrityError)
 
 class Database(object):
@@ -224,6 +224,11 @@ class Database(object):
             'num_records': Password.select().where(Password.user == user).count(),
             'session_time': user.session_time,
             'hide_passwords': user.hide_passwords,
+            'recent_logins': (
+                LoginEvent.select()
+                .where(LoginEvent.user == user)
+                .limit(10).dicts()
+            ),
         }
 
     # searches table functions

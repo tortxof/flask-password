@@ -32,4 +32,21 @@
     <button class="btn btn-default" type="submit">Save Changes</button>
   </div>
 </form>
+<p>Recent Logins:</p>
+<table class="table">
+  <thead>
+    <tr>
+      <td>Date</td>
+      <td>IP Address</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for login in user.recent_logins %}
+    <tr>
+      <td>{{login.date}}</td>
+      <td>{{login.ip}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

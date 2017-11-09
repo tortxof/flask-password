@@ -1,6 +1,7 @@
 import os
 import secrets
 from urllib.parse import urlparse
+import datetime
 
 from peewee import *
 from playhouse.postgres_ext import PostgresqlExtDatabase, TSVectorField
@@ -18,7 +19,7 @@ database = PostgresqlExtDatabase(
 
 def migrate():
     database.get_conn()
-    database.create_tables([User, Password, Search], safe=True)
+    database.create_tables([User, Password, Search, LoginEvent], safe=True)
     database.close()
 
 class BaseModel(Model):
@@ -62,3 +63,11 @@ class Search(BaseModel):
     name = CharField()
     query = CharField()
     user = ForeignKeyField(User)
+
+class LoginEvent(BaseModel):
+    date = DateTimeField(default=datetime.datetime.utcnow)
+    ip = CharField()
+    user = ForeignKeyField(User)
+
+    class Meta:
+        order_by = ('-date',)

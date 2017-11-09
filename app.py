@@ -112,6 +112,10 @@ def login():
         if db.check_password(username, password):
             user_id = db.get_user_id(username)
             salt = db.get_user_salt(user_id)
+            database.LoginEvent.create(
+                user = database.User.get(database.User.id == user_id),
+                ip = request.remote_addr,
+            )
             session['username'] = username
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
