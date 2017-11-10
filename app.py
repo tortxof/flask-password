@@ -347,7 +347,11 @@ def user_info():
         return redirect(url_for('index'))
     else:
         user = db.user_info(session.get('user_id'))
-        return render_template('user_info.html', user=user)
+        return render_template(
+            'user_info.html',
+            user = user,
+            hide_search = True,
+        )
 
 @app.route('/about')
 def about():
