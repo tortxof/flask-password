@@ -34,6 +34,7 @@ class User(BaseModel):
     key = CharField()
     session_time = IntegerField(default=10)
     hide_passwords = BooleanField(default=True)
+    date_created = DateTimeField(default=datetime.datetime.utcnow)
 
 class Password(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
