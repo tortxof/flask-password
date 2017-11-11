@@ -45,6 +45,8 @@ class Password(BaseModel):
     other = TextField()
     search_content = TSVectorField(default='')
     user = ForeignKeyField(User)
+    date_created = DateTimeField(default=datetime.datetime.utcnow)
+    date_modified = DateTimeField(null=True)
 
     def update_search_content(self):
         search_content = [
