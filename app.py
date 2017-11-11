@@ -2,6 +2,7 @@ import os
 from functools import wraps
 import base64
 import json
+import datetime
 import time
 
 from flask import (
@@ -41,6 +42,7 @@ def upload_static():
 
 @app.before_request
 def before_request():
+    g.now = datetime.datetime.utcnow()
     g.database = database.database
     g.database.get_conn()
 
