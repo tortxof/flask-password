@@ -4,6 +4,7 @@ import base64
 import time
 import string
 import hashlib
+import datetime
 
 from Crypto.Cipher import AES
 
@@ -333,6 +334,7 @@ class Database(object):
         password_id = record['id']
         del record['id']
         user = User.get(User.id == user_id)
+        record['date_modified'] = datetime.datetime.utcnow()
         Password.update(
             **self.encrypt_record(record, key)
         ).where(
