@@ -68,13 +68,9 @@ def login_required(f):
             and session['salt'] == db.get_user_salt(session['user_id'])
             and session['time'] >= int(time.time())
         ):
-            session['time'] = \
-                int(time.time()) + \
-                (db.get_user_session_time(session['user_id']) * 60)
             session['hide_passwords'] = \
                 db.get_user_hide_passwords(session['user_id'])
-            session['refresh'] = \
-                db.get_user_session_time(session['user_id']) * 60 + 30
+            session['refresh'] = session['time'] - int(time.time())
             g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
@@ -122,10 +118,9 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
-            session['time'] = \
-                int(time.time()) + (db.get_user_session_time(user_id) * 60)
-            session['refresh'] = \
-                db.get_user_session_time(session['user_id']) * 60 + 30
+            session['total_time'] = db.get_user_session_time(user_id) * 60
+            session['time'] = int(time.time()) + session['total_time']
+            session['refresh'] = session['total_time']
             session['hide_passwords'] = db.get_user_hide_passwords(user_id)
             flash('You are logged in.')
             return redirect(url_for('index'))
