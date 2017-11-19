@@ -2,7 +2,8 @@
   font-size: 28pt;
 }
 
-.username, .password {
+.username,
+.password {
   display: inline-block;
 }
 
@@ -32,4 +33,25 @@
   background-color: black;
   color: white;
   border-radius: 5px;
+}
+
+.session-time {
+  display: none;
+  margin-top: 5px;
+}
+
+.session-time .bg {
+  fill: transparent;
+  stroke: #9d9d9d;
+  stroke-width: 3px;
+}
+
+.session-time .fg {
+  fill: transparent;
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-dasharray: 63;
+  stroke-dashoffset: 0;
+  transform-origin: center center;
+  transform: rotate(-90deg);
 }

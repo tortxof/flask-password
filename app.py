@@ -2,6 +2,7 @@ import os
 from functools import wraps
 import base64
 import json
+import datetime
 import time
 
 from flask import (
@@ -29,8 +30,8 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
 app.config['FLASKS3_GZIP'] = True
 
-with open('version') as f:
-    app.config['GIT_VERSION'] = f.read()[:8]
+with open('VERSION') as f:
+    app.config['VERSION'] = f.read().strip()
 
 s3 = FlaskS3(app)
 
@@ -41,6 +42,7 @@ def upload_static():
 
 @app.before_request
 def before_request():
+    g.now = datetime.datetime.utcnow()
     g.database = database.database
     g.database.get_conn()
 
@@ -66,13 +68,9 @@ def login_required(f):
             and session['salt'] == db.get_user_salt(session['user_id'])
             and session['time'] >= int(time.time())
         ):
-            session['time'] = \
-                int(time.time()) + \
-                (db.get_user_session_time(session['user_id']) * 60)
             session['hide_passwords'] = \
                 db.get_user_hide_passwords(session['user_id'])
-            session['refresh'] = \
-                db.get_user_session_time(session['user_id']) * 60 + 30
+            session['refresh'] = session['time'] - int(time.time())
             g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
@@ -120,10 +118,9 @@ def login():
             session['user_id'] = user_id
             session['key'] = db.get_user_key(user_id, password, salt)
             session['salt'] = salt
-            session['time'] = \
-                int(time.time()) + (db.get_user_session_time(user_id) * 60)
-            session['refresh'] = \
-                db.get_user_session_time(session['user_id']) * 60 + 30
+            session['total_time'] = db.get_user_session_time(user_id) * 60
+            session['time'] = int(time.time()) + session['total_time']
+            session['refresh'] = session['total_time']
             session['hide_passwords'] = db.get_user_hide_passwords(user_id)
             flash('You are logged in.')
             return redirect(url_for('index'))
@@ -357,7 +354,7 @@ def user_info():
 def about():
     return render_template(
         'about.html',
-        version=app.config.get('GIT_VERSION'),
+        version=app.config.get('VERSION'),
         hide_search=True,
     )
 
