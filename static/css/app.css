@@ -49,7 +49,7 @@
 .session-time .fg {
   fill: transparent;
   stroke: #fff;
-  stroke-width: 5px;
+  stroke-width: 3px;
   stroke-dasharray: 63;
   stroke-dashoffset: 0;
   transform-origin: center center;
