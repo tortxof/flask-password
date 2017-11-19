@@ -17,9 +17,32 @@ database = PostgresqlExtDatabase(
     register_hstore = False,
 )
 
-def migrate():
+def _migrate():
+    from playhouse.migrate import PostgresqlMigrator, migrate
     database.get_conn()
     database.create_tables([User, Password, Search, LoginEvent], safe=True)
+    migrator = PostgresqlMigrator(database)
+    try:
+        with database.transaction():
+            migrate(
+                migrator.add_column(
+                    'user',
+                    'date_created',
+                    DateTimeField(default=datetime.datetime.utcnow),
+                ),
+                migrator.add_column(
+                    'password',
+                    'date_created',
+                    DateTimeField(default=datetime.datetime.utcnow),
+                ),
+                migrator.add_column(
+                    'password',
+                    'date_modified',
+                    DateTimeField(default=datetime.datetime.utcnow),
+                ),
+            )
+    except ProgrammingError:
+        pass
     database.close()
 
 class BaseModel(Model):
