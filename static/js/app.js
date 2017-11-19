@@ -78,3 +78,31 @@ $(document).ready(function() {
       .html(bullets)
   })
 })
+
+$('.show-pw').mouseup(function() {
+  var bullets = ''
+  for (var i = 0; i < 8; i++) {
+    bullets += '&bullet;'
+  }
+  $(this)
+    .next('.password')
+    .html(bullets)
+})
+
+if (refresh_time !== null) {
+  var fraction_time_left = refresh_time / total_time
+  var seconds_elapsed = 0
+  var session_countdown_interval = window.setInterval(function() {
+    seconds_elapsed++
+    fraction_time_left = (refresh_time - seconds_elapsed) / total_time
+    document.querySelector('.session-time .fg').style.strokeDashoffset =
+      -63 * (1 - fraction_time_left)
+    document.querySelector('.session-time').style.display = 'block'
+  }, 1000)
+  window.setTimeout(function() {
+    window.clearInterval(session_countdown_interval)
+  }, refresh_time * 1000)
+  window.setTimeout(function() {
+    window.location.reload(true)
+  }, (refresh_time + 10) * 1000)
+}
