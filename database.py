@@ -271,7 +271,7 @@ class Database(object):
             records = list(Password.select().where(
                 Password.user == user,
                 Password.search_content.match(('simple', query)),
-            ).dicts())
+            ).order_by(Password.date_modified, Password.date_created).dicts())
         except ProgrammingError:
             database.rollback()
             try:
@@ -282,7 +282,7 @@ class Database(object):
                         OP.TS_MATCH,
                         fn.plainto_tsquery('simple', query),
                     ),
-                ).dicts())
+                ).order_by(Password.date_modified, Password.date_created).dicts())
             except ProgrammingError:
                 database.rollback()
                 return []
@@ -311,17 +311,21 @@ class Database(object):
 
     def get_all(self, user_id, key):
         user = User.get(User.id == user_id)
-        return [
-            self.decrypt_record(
-                model_to_dict(
-                    record,
-                    recurse=False,
-                    exclude=[Password.search_content, Password.user],
-                ),
-                key,
-            )
-            for record in Password.select().where(Password.user == user)
-        ]
+        try:
+            return [
+                self.decrypt_record(
+                    model_to_dict(
+                        record,
+                        recurse=False,
+                        exclude=[Password.search_content, Password.user],
+                    ),
+                    key,
+                )
+                for record in Password.select().where(Password.user == user).order_by(Password.date_modified, Password.date_created)
+            ]
+        except ProgrammingError:
+            database.rollback()
+            return []
 
     def create_password(self, record, user_id, key):
         record['password'] = self.pwgen()
