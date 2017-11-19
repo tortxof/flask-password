@@ -30,8 +30,8 @@ app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
 app.config['FLASKS3_GZIP'] = True
 
-with open('version') as f:
-    app.config['GIT_VERSION'] = f.read()[:8]
+with open('VERSION') as f:
+    app.config['VERSION'] = f.read().strip()
 
 s3 = FlaskS3(app)
 
@@ -354,7 +354,7 @@ def user_info():
 def about():
     return render_template(
         'about.html',
-        version=app.config.get('GIT_VERSION'),
+        version=app.config.get('VERSION'),
         hide_search=True,
     )
 
