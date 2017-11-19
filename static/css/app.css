@@ -2,7 +2,8 @@
   font-size: 28pt;
 }
 
-.username, .password {
+.username,
+.password {
   display: inline-block;
 }
 
