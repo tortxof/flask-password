@@ -94,3 +94,9 @@ if (refresh_time !== null) {
     window.location.reload(true)
   }, (refresh_time + 10) * 1000)
 }
+
+document.querySelectorAll('.record-date').forEach(function(el) {
+  el.innerText = moment
+    .duration(-parseInt(el.dataset.seconds), 'seconds')
+    .humanize(true)
+})
