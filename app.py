@@ -58,6 +58,8 @@ def before_request():
     g.now = datetime.datetime.utcnow()
     g.database = database.database
     g.database.get_conn()
+    if 'user_id' in session:
+        g.searches = db.searches_get_all(session['user_id'])
 
 @app.after_request
 def after_request(request):
@@ -84,7 +86,6 @@ def login_required(f):
             session['hide_passwords'] = \
                 db.get_user_hide_passwords(session['user_id'])
             session['refresh'] = session['time'] - int(time.time())
-            g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
             for i in session_keys:
