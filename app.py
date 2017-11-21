@@ -16,7 +16,7 @@ from flask import (
     url_for,
     jsonify,
 )
-
+from flask_assets import Environment, Bundle
 from flask_s3 import FlaskS3, create_all
 
 import database
@@ -27,13 +27,26 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
+app.config['FLASKS3_CDN_DOMAIN'] = os.environ.get('FLASKS3_CDN_DOMAIN')
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
+app.config['FLASKS3_HEADERS'] = {'Cache-Control': 'max-age=31536000'}
 app.config['FLASKS3_GZIP'] = True
+
+app.config['FLASK_ASSETS_USE_S3'] = True
 
 with open('VERSION') as f:
     app.config['VERSION'] = f.read().strip()
 
 s3 = FlaskS3(app)
+
+assets = Environment(app)
+assets.auto_build = False
+
+js = Bundle('js/app.js', output='app.%(version)s.js')
+css = Bundle('css/app.css', output='app.%(version)s.css')
+
+assets.register('js_all', js)
+assets.register('css_all', css)
 
 db = database.Database()
 
@@ -45,6 +58,8 @@ def before_request():
     g.now = datetime.datetime.utcnow()
     g.database = database.database
     g.database.get_conn()
+    if 'user_id' in session:
+        g.searches = db.searches_get_all(session['user_id'])
 
 @app.after_request
 def after_request(request):
@@ -71,7 +86,6 @@ def login_required(f):
             session['hide_passwords'] = \
                 db.get_user_hide_passwords(session['user_id'])
             session['refresh'] = session['time'] - int(time.time())
-            g.searches = db.searches_get_all(session['user_id'])
             return f(*args, **kwargs)
         else:
             for i in session_keys:

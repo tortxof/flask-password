@@ -2,10 +2,41 @@
 
 ## A multi-user password manager built on flask.
 
-### Building the Docker image
+### Deployment
 
-    docker build -t tortxof/flask-password .
+Install python packages and activate virtual environment with Pipenv.
 
-### Running in development mode
+```
+pipenv install
+pipenv shell
+```
 
-    docker run -d --name flask-password -e FLASK_DEBUG=true -v $(pwd):/app -p 8080:5000 tortxof/flask-password python3 app.py
+Build the static assets.
+
+```
+flask assets build
+```
+
+Deploy with Zappa.
+
+```
+zappa deploy <env>
+zappa certify <env>
+```
+
+Update deployment.
+
+```
+zappa update <env>
+```
+
+Push static assets to S3 after deployment.
+
+```
+zappa invoke <env> app.upload_static
+```
+
+Since the static assets filenames are fingerprinted, dev and production
+environments can share the same static hosting. To avoid delay in production
+assets being available, deploy to dev first and push static assets from dev.
+Then when production is updated, static assets have already been pushed.
