@@ -64,6 +64,8 @@ def before_request():
 @app.after_request
 def after_request(request):
     g.database.close()
+    request.headers['Cache-Control'] = \
+        'private, no-cache, no-store, must-revalidate'
     return request
 
 def login_required(f):
