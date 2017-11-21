@@ -142,7 +142,7 @@ def login():
             return redirect(url_for('index'))
         else:
             flash('Incorrect username or password.')
-            return render_template('login.html')
+            return redirect(url_for('login'))
     else:
         return render_template('login.html')
 
@@ -216,7 +216,7 @@ def add_record():
         session.get('key'),
     )
     flash('Record added.')
-    return render_template('add_record.html', record=record)
+    return redirect(url_for('view_record', password_id=record['id']))
 
 @app.route('/delete', methods=['POST'])
 @app.route('/delete/<password_id>')
@@ -230,7 +230,7 @@ def delete_record(password_id=None):
             session.get('key'),
         )
         flash('Record deleted.')
-        return render_template('records.html', records=[record])
+        return redirect(url_for('index'))
     else:
         flash('Are you sure you want to delete this record?')
         record = db.get(
@@ -252,7 +252,7 @@ def edit_record(password_id=None):
             session.get('key'),
         )
         flash('Record updated.')
-        return render_template('records.html', records=[record])
+        return redirect(url_for('view_record', password_id=record['id']))
     else:
         record = db.get(
             password_id,
@@ -323,7 +323,7 @@ def import_records():
                 num_updated,
             )
         )
-        return render_template('records.html', records=records)
+        return redirect(url_for('index'))
     else:
         return render_template('import_records.html', hide_search=True)
 
