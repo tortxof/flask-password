@@ -261,6 +261,16 @@ def edit_record(password_id=None):
         )
         return render_template('edit_record.html', record=record)
 
+@app.route('/view/<password_id>')
+@login_required
+def view_record(password_id):
+    record = db.get(
+        password_id,
+        session.get('user_id'),
+        session.get('key'),
+    )
+    return render_template('records.html', records=[record])
+
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
