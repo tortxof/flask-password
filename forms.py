@@ -27,3 +27,12 @@ class AddForm(FlaskForm):
 
 class EditForm(AddForm):
     id = HiddenField()
+    title = StringField('Title', [Length(max=255)])
+    url = StringField('URL', [Optional(), URL(), Length(max=255)])
+    username = StringField(
+        'Username',
+        [Length(max=255)],
+        render_kw={'inputmode': 'verbatim'},
+    )
+    password = StringField('Password', [Length(max=255)])
+    other = TextAreaField('Other')
