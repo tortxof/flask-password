@@ -272,7 +272,7 @@ def edit_search():
 @app.route('/searches')
 @login_required
 def edit_searches():
-    searches = db.searches_get_all(session['user_id'])
+    searches = Search.select().join(User).where(User.id == session['user_id'])
     return render_template('searches.html', searches=searches)
 
 @app.route('/all')
