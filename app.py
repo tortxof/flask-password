@@ -145,7 +145,21 @@ def new_user():
 @app.route('/username-available')
 def username_available():
     username = request.args.get('user')
-    return jsonify(available=db.username_available(username))
+    form = SignupForm(
+        formdata = None,
+        data = {'username': username, 'password': 'dummypassword'},
+        meta = {'csrf': False},
+    )
+    try:
+        User.get(User.username == username)
+    except User.DoesNotExist:
+        username_in_db = False
+    else:
+        username_in_db = True
+    return jsonify(
+        username = username,
+        available = (form.validate() and not username_in_db),
+    )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
