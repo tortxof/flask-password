@@ -7,7 +7,12 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', [Length(max=1024)])
 
 class SignupForm(FlaskForm):
-    username = StringField('Username', [Length(min=3, max=255)], render_kw={'inputmode': 'verbatim'})
+    username = StringField(
+        'Username',
+        [Length(min=3, max=255)],
+        render_kw={'inputmode': 'verbatim'},
+        id='newusername',
+    )
     password = PasswordField('Password', [Length(min=8, max=1024)])
 
 class AddForm(FlaskForm):
