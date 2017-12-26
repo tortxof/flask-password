@@ -378,11 +378,11 @@ def edit_record(password_id=None):
 @app.route('/view/<password_id>')
 @login_required
 def view_record(password_id):
-    record = db.get(
-        password_id,
-        session.get('user_id'),
-        session.get('key'),
+    user = User.get(User.id == session['user_id'])
+    record = model_to_dict(
+        Password.get(Password.user == user, Password.id == password_id)
     )
+    record = crypto.decrypt_record(record, session['key'])
     return render_template('records.html', records=[record])
 
 @app.route('/change-password', methods=['GET', 'POST'])
