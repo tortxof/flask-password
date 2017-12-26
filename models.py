@@ -87,7 +87,7 @@ class Password(BaseModel):
 
 class Search(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
-    name = CharField()
+    name = CharField(default='')
     query = CharField()
     user = ForeignKeyField(User)
 

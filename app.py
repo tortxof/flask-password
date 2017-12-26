@@ -248,11 +248,8 @@ def search():
 @app.route('/searches/save')
 @login_required
 def save_search():
-    search = {
-        'query': request.args.get('query'),
-        'name': '',
-    }
-    db.searches_create(search, session.get('user_id'))
+    user = User.get(User.id == session['user_id'])
+    Search.create(query=request.args.get('query'), user=user)
     flash('Search term saved.')
     return redirect(url_for('index'))
 
