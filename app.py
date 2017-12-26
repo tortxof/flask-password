@@ -305,13 +305,20 @@ def all_records():
 def add_record():
     form = AddForm()
     if form.validate_on_submit():
-        record = db.create_password(
-            form.data,
-            session.get('user_id'),
-            session.get('key'),
+        user = User.get(User.id == session['user_id'])
+        record = Password.create(
+            **crypto.encrypt_record({
+                'title': form.title.data,
+                'url': form.url.data,
+                'username': form.username.data,
+                'password': crypto.pwgen(),
+                'other': form.other.data,
+            }, session['key']),
+            user = user,
         )
+        record.update_search_content()
         flash('Record added.')
-        return redirect(url_for('view_record', password_id=record['id']))
+        return redirect(url_for('view_record', password_id=record.id))
     else:
         return render_template('index.html', form=form)
 
