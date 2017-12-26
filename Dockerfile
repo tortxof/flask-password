@@ -1,15 +1,21 @@
 FROM python:3.6
 MAINTAINER Daniel Jones <tortxof@gmail.com>
 
-RUN groupadd -r app && useradd -r -g app app
+RUN groupadd -r app && useradd -r -m -g app app
 
 COPY requirements.txt /app/
 WORKDIR /app
-RUN pip install -r requirements.txt
+RUN pip install pipenv
 COPY . /app/
+
+RUN chown -R app:app /app
 
 USER app
 
+RUN pipenv install
+
 EXPOSE 5000
 
-CMD ["uwsgi", "--yaml", "uwsgi.yaml"]
+ENV FLASK_DEBUG=true
+
+CMD ["pipenv", "run", "python", "app.py"]
