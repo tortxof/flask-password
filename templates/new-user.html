@@ -1,19 +1,27 @@
 {% extends 'layout.html' %}
 {% block content %}
 <h3>Sign Up</h3>
+{% if form.errors %}
+  {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+    {% for error in field_errors %}
+      <div class="alert alert-danger">{{ form[field_name].label }}: {{ error }}</div>
+    {% endfor %}
+  {% endfor %}
+{% endif %}
 <form action="{{url_for('new_user')}}" method="post" novalidate>
+  {{ form.hidden_tag() }}
   <div class="row">
     <div class="col-md-6">
       <div class="form-group">
-        <label for="newusername">Username</label>
-        <input class="form-control" type="email" id="newusername" name="username" autofocus>
+        {{ form.username.label }}
+        {{ form.username(class='form-control', autofocus=True) }}
         <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
       </div>
     </div>
     <div class="col-md-6">
       <div class="form-group">
-        <label for="password">Password</label>
-        <input class="form-control" type="password" id="password" name="password">
+        {{ form.password.label }}
+        {{ form.password(class='form-control') }}
       </div>
     </div>
   </div>

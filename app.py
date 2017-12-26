@@ -20,7 +20,7 @@ from flask_assets import Environment, Bundle
 from flask_s3 import FlaskS3, create_all
 
 import crypto
-from models import database, User, Password, Search, LoginEvent
+from models import database, User, Password, Search, LoginEvent, IntegrityError
 from forms import LoginForm, SignupForm, AddForm, EditForm
 
 app = Flask(__name__)
@@ -116,15 +116,31 @@ def index():
 
 @app.route('/new-user', methods=['GET', 'POST'])
 def new_user():
-    if request.method == 'POST':
-        user_added = db.new_user(request.form.to_dict())
-        if user_added:
-            flash('Added user {}.'.format(user_added))
+    form = SignupForm()
+    if form.validate_on_submit():
+        salt = crypto.b64_encode(os.urandom(16))
+        key = crypto.encrypt(
+            crypto.kdf(form.password.data, salt),
+            crypto.b64_encode(os.urandom(crypto.AES.block_size)),
+        )
+        try:
+            user = User.create(
+                username = form.username.data,
+                password = generate_password_hash(
+                    form.password.data,
+                    method='pbkdf2:sha256:10000',
+                ),
+                salt = salt,
+                key = key,
+            )
+        except IntegrityError:
+            flash('That username is not available.')
+            return redirect(url_for('new_user'))
         else:
-            flash('Invalid username or password.')
+            flash(f'User "{user.username}" has been created.')
         return redirect(url_for('index'))
     else:
-        return render_template('new-user.html')
+        return render_template('new-user.html', form=form)
 
 @app.route('/username-available')
 def username_available():
