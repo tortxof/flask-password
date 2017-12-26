@@ -15,6 +15,7 @@ peewee = "*"
 "psycopg2" = "*"
 zappa = "*"
 flask-assets = "*"
+flask-wtf = "*"
 
 
 [dev-packages]

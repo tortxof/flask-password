@@ -1,6 +1,5 @@
 import os
 from functools import wraps
-import base64
 import json
 import datetime
 import time
@@ -16,16 +15,17 @@ from flask import (
     url_for,
     jsonify,
 )
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_assets import Environment, Bundle
 from flask_s3 import FlaskS3, create_all
 
-import database
+import crypto
+from models import database, User, Password, Search, LoginEvent
+from forms import LoginForm, SignupForm, AddForm, EditForm
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-
-app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 
 app.config['FLASKS3_CDN_DOMAIN'] = os.environ.get('FLASKS3_CDN_DOMAIN')
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
@@ -33,6 +33,11 @@ app.config['FLASKS3_HEADERS'] = {'Cache-Control': 'max-age=31536000'}
 app.config['FLASKS3_GZIP'] = True
 
 app.config['FLASK_ASSETS_USE_S3'] = True
+
+if os.environ.get('FLASK_DEBUG', 'false').lower() == 'true':
+    app.config['DEBUG'] = True
+    app.config['ASSETS_DEBUG'] = True
+    app.config['FLASK_ASSETS_USE_S3'] = False
 
 with open('VERSION') as f:
     app.config['VERSION'] = f.read().strip()
@@ -48,18 +53,18 @@ css = Bundle('css/app.css', output='app.%(version)s.css')
 assets.register('js_all', js)
 assets.register('css_all', css)
 
-db = database.Database()
-
 def upload_static():
     create_all(app)
 
 @app.before_request
 def before_request():
     g.now = datetime.datetime.utcnow()
-    g.database = database.database
+    g.database = database
     g.database.get_conn()
     if 'user_id' in session:
-        g.searches = db.searches_get_all(session['user_id'])
+        g.searches = Search.select().join(User).where(
+            User.id == session['user_id']
+        )
 
 @app.after_request
 def after_request(request):
@@ -71,6 +76,7 @@ def after_request(request):
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+        login_confirmed = True
         session_keys = (
             'username',
             'user_id',
@@ -80,13 +86,20 @@ def login_required(f):
             'refresh',
             'hide_passwords',
         )
-        if (
-            all(x in session for x in session_keys)
-            and session['salt'] == db.get_user_salt(session['user_id'])
-            and session['time'] >= int(time.time())
-        ):
-            session['hide_passwords'] = \
-                db.get_user_hide_passwords(session['user_id'])
+        if 'user_id' in session:
+            try:
+                user = User.get(User.id == session['user_id'])
+            except User.DoesNotExist:
+                login_confirmed = False
+        else:
+            login_confirmed = False
+        login_confirmed = login_confirmed and all([
+            all(key in session for key in session_keys),
+            session['salt'] == user.salt,
+            session['time'] >= int(time.time()),
+        ])
+        if login_confirmed:
+            session['hide_passwords'] = user.hide_passwords
             session['refresh'] = session['time'] - int(time.time())
             return f(*args, **kwargs)
         else:
@@ -99,7 +112,7 @@ def login_required(f):
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('index.html', form=AddForm())
 
 @app.route('/new-user', methods=['GET', 'POST'])
 def new_user():
@@ -120,31 +133,38 @@ def username_available():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if db.check_password(username, password):
-            user_id = db.get_user_id(username)
-            salt = db.get_user_salt(user_id)
-            database.LoginEvent.create(
-                user = database.User.get(database.User.id == user_id),
+    form = LoginForm()
+    if form.validate_on_submit():
+        try:
+            user = User.get(User.username == form.username.data)
+        except User.DoesNotExist:
+            user = None
+        if (
+            user is not None
+            and check_password_hash(user.password, form.password.data)
+        ):
+            LoginEvent.create(
+                user = user,
                 ip = request.remote_addr,
             )
-            session['username'] = username
-            session['user_id'] = user_id
-            session['key'] = db.get_user_key(user_id, password, salt)
-            session['salt'] = salt
-            session['total_time'] = db.get_user_session_time(user_id) * 60
+            session['username'] = user.username
+            session['user_id'] = user.id
+            session['key'] = crypto.decrypt(
+                crypto.kdf(form.password.data, user.salt),
+                user.key,
+            )
+            session['salt'] = user.salt
+            session['total_time'] = user.session_time * 60
             session['time'] = int(time.time()) + session['total_time']
             session['refresh'] = session['total_time']
-            session['hide_passwords'] = db.get_user_hide_passwords(user_id)
+            session['hide_passwords'] = user.hide_passwords
             flash('You are logged in.')
             return redirect(url_for('index'))
         else:
             flash('Incorrect username or password.')
             return redirect(url_for('login'))
     else:
-        return render_template('login.html')
+        return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -206,17 +226,20 @@ def all_records():
     flash('Records found: {}'.format(len(records)))
     return render_template('records.html', records=records)
 
-@app.route('/add', methods=['POST'])
+@app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_record():
-    record = request.form.to_dict()
-    record = db.create_password(
-        record,
-        session.get('user_id'),
-        session.get('key'),
-    )
-    flash('Record added.')
-    return redirect(url_for('view_record', password_id=record['id']))
+    form = AddForm()
+    if form.validate_on_submit():
+        record = db.create_password(
+            form.data,
+            session.get('user_id'),
+            session.get('key'),
+        )
+        flash('Record added.')
+        return redirect(url_for('view_record', password_id=record['id']))
+    else:
+        return render_template('index.html', form=form)
 
 @app.route('/delete', methods=['POST'])
 @app.route('/delete/<password_id>')
@@ -244,22 +267,32 @@ def delete_record(password_id=None):
 @app.route('/edit/<password_id>')
 @login_required
 def edit_record(password_id=None):
-    if request.method == 'POST':
-        record = request.form.to_dict()
+    user = User.get(User.id == session['user_id'])
+
+    if password_id is not None:
+        flash('password_id is not None')
+        record = Password.get(Password.user == user, Password.id == password_id)
+        record = crypto.decrypt_record(record, session['key'])
+        form = EditForm(
+            formdata = None,
+            data = db.get(
+                password_id,
+                session.get('user_id'),
+                session.get('key'),
+            ),
+        )
+    else:
+        form = EditForm()
+    if form.validate_on_submit():
         record = db.update_password(
-            record,
+            form.data,
             session.get('user_id'),
             session.get('key'),
         )
         flash('Record updated.')
         return redirect(url_for('view_record', password_id=record['id']))
     else:
-        record = db.get(
-            password_id,
-            session.get('user_id'),
-            session.get('key'),
-        )
-        return render_template('edit_record.html', record=record)
+        return render_template('edit_record.html', form=form)
 
 @app.route('/view/<password_id>')
 @login_required
