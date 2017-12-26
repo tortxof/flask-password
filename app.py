@@ -18,6 +18,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_assets import Environment, Bundle
 from flask_s3 import FlaskS3, create_all
+from playhouse.shortcuts import model_to_dict
 
 import crypto
 from models import (
@@ -278,8 +279,25 @@ def edit_searches():
 @app.route('/all')
 @login_required
 def all_records():
-    records = db.get_all(session.get('user_id'), session.get('key'))
-    flash('Records found: {}'.format(len(records)))
+    user = User.get(User.id == session['user_id'])
+    try:
+        records = [
+            crypto.decrypt_record(
+                model_to_dict(
+                    record,
+                    recurse=False,
+                    exclude=[Password.search_content, Password.user],
+                ),
+                session['key'],
+            )
+            for record in Password.select().where(
+                Password.user == user
+            ).order_by(Password.date_modified, Password.date_created)
+        ]
+    except ProgrammingError:
+        database.rollback()
+        records = []
+    flash(f'Records found: {len(records)}')
     return render_template('records.html', records=records)
 
 @app.route('/add', methods=['GET', 'POST'])
