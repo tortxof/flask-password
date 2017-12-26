@@ -198,13 +198,8 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if 'username' in session:
-        for i in tuple(session.keys()):
-            session.pop(i, None)
-        flash('You have been logged out.')
-    else:
-        flash('You were not logged in.')
-    return redirect(url_for('login'))
+    session.pop('user_id', None)
+    return redirect(url_for('index'))
 
 @app.route('/search')
 @login_required
