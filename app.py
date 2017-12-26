@@ -20,7 +20,18 @@ from flask_assets import Environment, Bundle
 from flask_s3 import FlaskS3, create_all
 
 import crypto
-from models import database, User, Password, Search, LoginEvent, IntegrityError
+from models import (
+    database,
+    User,
+    Password,
+    Search,
+    LoginEvent,
+    IntegrityError,
+    ProgrammingError,
+    Expression,
+    OP,
+    fn,
+)
 from forms import LoginForm, SignupForm, AddForm, EditForm
 
 app = Flask(__name__)
@@ -207,8 +218,31 @@ def search():
     query = request.args.get('q', '')
     if query:
         g.query = query
-    records = db.search(query, session.get('user_id'), session.get('key'))
-    flash('Records found: {}'.format(len(records)))
+    user = User.get(User.id == session['user_id'])
+    try:
+        records = list(Password.select().where(
+            Password.user == user,
+            Password.search_content.match(('simple', query)),
+        ).order_by(Password.date_modified, Password.date_created).dicts())
+    except ProgrammingError:
+        g.database.rollback()
+        try:
+            records = list(Password.select().where(
+                Password.user == user,
+                Expression(
+                    Password.search_content,
+                    OP.TS_MATCH,
+                    fn.plainto_tsquery('simple', query),
+                ),
+            ).order_by(Password.date_modified, Password.date_created).dicts())
+        except ProgrammingError:
+            g.database.rollback()
+            records = []
+    records = [
+        crypto.decrypt_record(record, session['key'])
+        for record in records
+    ]
+    flash(f'Records found: {len(records)}')
     return render_template('records.html', records=records)
 
 @app.route('/searches/save')

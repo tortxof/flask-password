@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 import datetime
 
 from peewee import *
+from peewee import Expression, OP
 from playhouse.postgres_ext import PostgresqlExtDatabase, TSVectorField
 
 def gen_id():
