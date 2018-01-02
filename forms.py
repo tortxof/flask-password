@@ -36,3 +36,6 @@ class EditForm(AddForm):
     )
     password = StringField('Password', [Length(max=255)])
     other = TextAreaField('Other')
+
+class DeleteForm(FlaskForm):
+    id = HiddenField()

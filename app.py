@@ -33,7 +33,7 @@ from models import (
     OP,
     fn,
 )
-from forms import LoginForm, SignupForm, AddForm, EditForm
+from forms import LoginForm, SignupForm, AddForm, EditForm, DeleteForm
 
 app = Flask(__name__)
 
@@ -326,23 +326,22 @@ def add_record():
 @app.route('/delete/<password_id>')
 @login_required
 def delete_record(password_id=None):
-    if request.method == 'POST':
-        password_id = request.form.get('password_id')
-        record = db.delete_password(
-            password_id,
-            session.get('user_id'),
-            session.get('key'),
-        )
-        flash('Record deleted.')
+    if password_id:
+        record = model_to_dict(Password.get(Password.id == password_id))
+        form = DeleteForm(formdata=None, data=record)
+    else:
+        form = DeleteForm()
+    if form.validate_on_submit():
+        try:
+            Password.get(Password.id == form.id.data).delete_instance()
+        except Password.DoesNotExist:
+            flash('No records deleted.')
+        else:
+            flash('Record deleted.')
         return redirect(url_for('index'))
     else:
         flash('Are you sure you want to delete this record?')
-        record = db.get(
-            password_id,
-            session.get('user_id'),
-            session.get('key'),
-        )
-        return render_template('delete_record.html', record=record)
+        return render_template('delete_record.html', form=form, record=record)
 
 @app.route('/edit', methods=['POST'])
 @app.route('/edit/<password_id>')

@@ -4,7 +4,7 @@
 <div class="panel panel-default">
   <div class="panel-body">
     <form class="form-inline" action="{{url_for('delete_record')}}" method="post">
-      <input type="hidden" name="password_id" value="{{ record.id }}">
+      {{ form.hidden_tag() }}
       <button type="submit" class="btn btn-warning">Delete</button>
     </form>
   </div>
