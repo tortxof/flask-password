@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, HiddenField
-from wtforms.validators import DataRequired, Length, URL, Optional
+from wtforms.validators import InputRequired, Length, URL, Optional, EqualTo
 
 class LoginForm(FlaskForm):
     username = StringField('Username', [Length(max=255)], render_kw={'inputmode': 'verbatim'})
@@ -39,3 +39,18 @@ class EditForm(AddForm):
 
 class DeleteForm(FlaskForm):
     id = HiddenField()
+
+class ChangePasswordForm(FlaskForm):
+    old_password = PasswordField(
+        'Current Password',
+        [InputRequired(), Length(min=8, max=1024)],
+    )
+    new_password = PasswordField(
+        'New Password',
+        [
+            InputRequired(),
+            Length(min=8, max=1024),
+            EqualTo('confirm_new_password', message='Passwords must match.'),
+        ],
+    )
+    confirm_new_password = PasswordField('Confirm New Password')

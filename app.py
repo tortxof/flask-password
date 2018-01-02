@@ -33,7 +33,14 @@ from models import (
     OP,
     fn,
 )
-from forms import LoginForm, SignupForm, AddForm, EditForm, DeleteForm
+from forms import (
+    LoginForm,
+    SignupForm,
+    AddForm,
+    EditForm,
+    DeleteForm,
+    ChangePasswordForm,
+)
 
 app = Flask(__name__)
 
@@ -405,20 +412,31 @@ def view_record(password_id):
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
-    if request.method == 'POST':
-        if db.change_password(
-            request.form.to_dict(),
-            session.get('username'),
-            session.get('user_id'),
-            session.get('key'),
-        ):
-            flash('Password change successfull')
-        else:
-            flash('There was an error.')
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        user = User.get(User.id == session['user_id'])
+        if check_password_hash(user.password, form.old_password.data):
+            salt = crypto.b64_encode(os.urandom(16))
+            dk = crypto.kdf(form.new_password.data, salt)
+            dbkey = crypto.encrypt(dk, session['key'])
+            user.password = generate_password_hash(
+                form.new_password.data,
+                method='pbkdf2:sha256:10000',
+            )
+            user.salt = salt
+            user.key = dbkey
+            user.save()
+            flash('Your password has been updated.')
             return redirect(url_for('index'))
-        return redirect(url_for('logout'))
+        else:
+            flash('Old password incorrect')
+            return redirect(url_for('change_password'))
     else:
-        return render_template('change_password.html', hide_search=True)
+        return render_template(
+            'change_password.html',
+            hide_search = True,
+            form = form,
+        )
 
 @app.route('/export')
 @login_required
