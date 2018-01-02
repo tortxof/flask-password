@@ -350,7 +350,6 @@ def delete_record(password_id=None):
 def edit_record(password_id=None):
     user = User.get(User.id == session['user_id'])
     if password_id is not None:
-        flash('password_id is not None')
         record = crypto.decrypt_record(
             model_to_dict(
                 Password.get(Password.user == user, Password.id == password_id)
