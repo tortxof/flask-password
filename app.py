@@ -474,28 +474,58 @@ def export_records():
 @login_required
 def import_records():
     if request.method == 'POST':
-        records = json.loads(request.form.get('json-data')).get('records')
-        imported_ids = db.import_passwords(
-            records,
-            session.get('user_id'),
-            session.get('key'),
-        )
-        records = db.get_many(
-            imported_ids['new'] + imported_ids['updated'],
-            session.get('user_id'),
-            session.get('key'),
-        )
-        num_new = len(imported_ids['new'])
-        num_updated = len(imported_ids['updated'])
+        user = User.get(User.id == session['user_id'])
+        form_records = json.loads(request.form.get('json-data')).get('records')
+        imported_counts = {'new': 0, 'updated': 0}
+        for record in form_records:
+            record = {
+                key: record.get(key, '') for key in
+                (
+                    'id',
+                    'title',
+                    'url',
+                    'username',
+                    'password',
+                    'other',
+                )
+            }
+            if not record['id']:
+                del record['id']
+            is_new = False
+            if not 'password' in record:
+                record['password'] = crypto.pwgen()
+            record = crypto.encrypt_record(record, session['key'])
+            if (
+                (not 'id' in record)
+                or (record.get('id') == '')
+                or (
+                    Password.select().where(
+                        Password.id == record['id']
+                    ).count() == 0
+                )
+            ):
+                is_new = True
+            if is_new:
+                record = Password.create(**record, user=user)
+                record.update_search_content()
+                imported_counts['new'] += 1
+            else:
+                Password.update(**record).where(
+                    Password.id == record['id'],
+                    Password.user == user,
+                ).execute()
+                record = Password.get(Password.id == record['id'])
+                record.update_search_content()
+                imported_counts['updated'] += 1
         flash(
             (
                 'Imported {0} records.'
                 ' {1} new records.'
                 ' {2} updated records.'
             ).format(
-                num_new + num_updated,
-                num_new,
-                num_updated,
+                imported_counts['new'] + imported_counts['updated'],
+                imported_counts['new'],
+                imported_counts['updated'],
             )
         )
         return redirect(url_for('index'))
