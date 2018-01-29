@@ -265,16 +265,23 @@ def save_search():
 @app.route('/searches/edit', methods=['POST'])
 @login_required
 def edit_search():
+    user = User.get(User.id == session['user_id'])
     if 'delete' in request.form:
-        search = db.searches_delete(
-            request.form.get('id'),
-            session.get('user_id'),
-        )
+        Search.get(
+            Search.id == request.form.get('id'),
+            Search.user == user,
+        ).delete_instance()
         flash('Deleted saved search.')
         return redirect(url_for('index'))
     else:
-        search = request.form.to_dict()
-        search = db.searches_update(search, session.get('user_id'))
+        form = request.form.to_dict()
+        search = Search.get(
+            Search.id == form['id'],
+            Search.user == user,
+        )
+        search.name = form['name']
+        search.query = form['query']
+        search.save()
         flash('Changes saved.')
         return redirect(url_for('index'))
 
