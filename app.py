@@ -449,7 +449,25 @@ def change_password():
 @app.route('/export')
 @login_required
 def export_records():
-    records = db.get_all(session.get('user_id'), session.get('key'))
+    user = User.get(User.id == session['user_id'])
+    try:
+        records = [
+            crypto.decrypt_record(
+                model_to_dict(
+                    record,
+                    recurse = False,
+                    exclude = [Password.search_content, Password.user],
+                ),
+                session['key'],
+            )
+            for record in Password.select()
+            .where(Password.user == user)
+            .order_by(Password.date_modified, Password.date_created)
+        ]
+    except ProgrammingError:
+        database.rollback()
+        flash('Database error. Please try again later.')
+        return redirect(url_for('index'))
     return jsonify(records=records)
 
 @app.route('/import', methods=['GET', 'POST'])
