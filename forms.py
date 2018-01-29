@@ -29,6 +29,10 @@ class SignupForm(FlaskForm):
     )
     password = PasswordField('Password', [Length(min=8, max=1024)])
 
+class DeleteAccountForm(FlaskForm):
+    username = StringField('Username', [Length(max=255)], render_kw={'inputmode': 'verbatim'})
+    password = PasswordField('Password', [Length(max=1024)])
+
 class AddForm(FlaskForm):
     title = StringField('Title', [Length(max=255)])
     url = StringField('URL', [Optional(), URL(), Length(max=255)])

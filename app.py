@@ -36,6 +36,7 @@ from models import (
 from forms import (
     LoginForm,
     SignupForm,
+    DeleteAccountForm,
     AddForm,
     EditForm,
     DeleteForm,
@@ -578,6 +579,26 @@ def user_info():
             user = user,
             recent_logins = recent_logins,
             num_records = num_records,
+            hide_search = True,
+        )
+
+@app.route('/delete-account', methods=['GET', 'POST'])
+@login_required
+def delete_account():
+    user = User.get(User.id == session['user_id'])
+    form = DeleteAccountForm()
+    if (
+        form.validate_on_submit()
+        and user.username == form.username.data
+        and check_password_hash(user.password, form.password.data)
+    ):
+        user.delete_instance(recursive=True)
+        flash('Account deleted.')
+        return redirect(url_for('index'))
+    else:
+        return render_template(
+            'delete_account.html',
+            form = form,
             hide_search = True,
         )
 

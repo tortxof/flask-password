@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h3>Delete Account</h3>
+<div class="alert alert-danger">
+  This will delete your account and all associated data. This is not reversible.
+</div>
+<form action="{{url_for('delete_account')}}" method="post">
+  {{ form.hidden_tag() }}
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group">
+        {{ form.username.label }}
+        {{ form.username(class='form-control', autofocus=True) }}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class='form-control') }}
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <button class="btn btn-danger" type="submit">Delete Account</button>
+  </div>
+</form>
+{% endblock %}
