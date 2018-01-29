@@ -40,6 +40,7 @@ from forms import (
     EditForm,
     DeleteForm,
     ChangePasswordForm,
+    UserInfoForm,
 )
 
 app = Flask(__name__)
@@ -498,30 +499,28 @@ def generate_passwords_json():
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
 def user_info():
+    user = User.get(User.id == session['user_id'])
+    recent_logins = (
+        LoginEvent.select()
+        .where(LoginEvent.user == user)
+        .limit(10).dicts()
+    )
     if request.method == 'POST':
-        session_time = request.form.get('session_time')
-        hide_passwords = request.form.get('hide_passwords')
-        try:
-            session_time = int(session_time)
-        except ValueError:
-            flash('session_time must be an integer.')
-            return redirect(url_for('index'))
-        try:
-            hide_passwords = bool(hide_passwords)
-        except ValueError:
-            flash('Error while casting hide_passwords to bool.')
-            return redirect(url_for('index'))
-        if session_time < 1:
-            session_time = 1
-        db.set_user_session_time(session.get('user_id'), session_time)
-        db.set_user_hide_passwords(session.get('user_id'), hide_passwords)
+        form = UserInfoForm()
+    else:
+        form = UserInfoForm(formdata=None, data=model_to_dict(user))
+    if form.validate_on_submit():
+        user.session_time = form.session_time.data
+        user.hide_passwords = form.hide_passwords.data
+        user.save()
         flash('Preferences updated.')
         return redirect(url_for('index'))
     else:
-        user = db.user_info(session.get('user_id'))
         return render_template(
             'user_info.html',
+            form = form,
             user = user,
+            recent_logins = recent_logins,
             hide_search = True,
         )
 

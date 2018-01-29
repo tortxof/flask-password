@@ -1,6 +1,20 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, PasswordField, HiddenField
-from wtforms.validators import InputRequired, Length, URL, Optional, EqualTo
+from wtforms import (
+    BooleanField,
+    StringField,
+    IntegerField,
+    TextAreaField,
+    PasswordField,
+    HiddenField,
+)
+from wtforms.validators import (
+    InputRequired,
+    NumberRange,
+    Length,
+    URL,
+    Optional,
+    EqualTo,
+)
 
 class LoginForm(FlaskForm):
     username = StringField('Username', [Length(max=255)], render_kw={'inputmode': 'verbatim'})
@@ -54,3 +68,10 @@ class ChangePasswordForm(FlaskForm):
         ],
     )
     confirm_new_password = PasswordField('Confirm New Password')
+
+class UserInfoForm(FlaskForm):
+    session_time = IntegerField(
+        'Session Time (minutes)',
+        [NumberRange(min=1, max=1440)],
+    )
+    hide_passwords = BooleanField()
