@@ -560,6 +560,7 @@ def user_info():
         .where(LoginEvent.user == user)
         .limit(10).dicts()
     )
+    num_records = Password.select().where(Password.user == user).count()
     if request.method == 'POST':
         form = UserInfoForm()
     else:
@@ -576,6 +577,7 @@ def user_info():
             form = form,
             user = user,
             recent_logins = recent_logins,
+            num_records = num_records,
             hide_search = True,
         )
 
