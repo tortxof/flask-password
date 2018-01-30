@@ -86,29 +86,30 @@ def test_edit_record(driver):
     url = 'http://example.com/'
     username = 'test'
     other = 'This is a test.'
+    edited = ' edited'
     driver.get(app_url)
     driver.find_element_by_link_text('All Records').click()
     driver.execute_script(
         'return document.querySelector(\'[href^="/edit/"]\')'
     ).click()
-    driver.find_element_by_name('title').send_keys('edited')
-    driver.find_element_by_name('url').send_keys('edited')
-    driver.find_element_by_name('username').send_keys('edited')
-    driver.find_element_by_name('password').send_keys('edited')
+    driver.find_element_by_name('title').send_keys(edited)
+    driver.find_element_by_name('url').send_keys(edited)
+    driver.find_element_by_name('username').send_keys(edited)
+    driver.find_element_by_name('password').send_keys(edited)
     el = driver.find_element_by_name('other')
-    el.send_keys('edited')
+    el.send_keys(edited)
     el.submit()
     wait_for_stale(driver, el)
     el = driver.find_elements_by_css_selector('.panel-body .row .col-sm-9')
-    assert el[0].text == title + 'edited'
-    assert el[1].text == url + 'edited'
-    assert el[2].text == username + 'edited'
+    assert el[0].text == title + edited
+    assert el[1].text == url + edited
+    assert el[2].text == username + edited
     assert el[3].text == '••••••••'
     assert (
         el[3].find_element_by_css_selector('button.cb-copy')
         .get_attribute('data-clipboard-text')
-    )[16:] == 'edited'
-    assert el[4].text == other + 'edited'
+    )[16:] == edited
+    assert el[4].text == other + edited
 
 def test_change_password():
     pass
