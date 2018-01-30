@@ -20,3 +20,5 @@ flask-wtf = "*"
 
 [dev-packages]
 
+pytest = "*"
+selenium = "*"
