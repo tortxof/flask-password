@@ -7,6 +7,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+app_url = 'https://pw-dev.djones.co/'
+
 def wait_for_stale(driver, el):
     WebDriverWait(driver, 10).until(EC.staleness_of(el))
 
@@ -24,7 +26,7 @@ def driver():
     myDriver.close()
 
 def test_create_user(driver, credentials):
-    driver.get("https://pw-dev.djones.co/")
+    driver.get(app_url)
     el = driver.find_element_by_link_text("Sign Up")
     el.click()
     el = driver.find_element_by_name('username')
@@ -40,7 +42,7 @@ def test_create_user(driver, credentials):
     assert credentials[0] in el.text
 
 def test_login(driver, credentials):
-    driver.get("https://pw-dev.djones.co/")
+    driver.get(app_url)
     el = driver.find_element_by_link_text("Log In")
     el.click()
     el = driver.find_element_by_name('username')
