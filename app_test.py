@@ -56,27 +56,65 @@ def test_login(driver, credentials):
     el = driver.find_element_by_css_selector('.container .alert')
     assert 'You are logged in.' in el.text
 
-# el = driver.find_element_by_name('username')
-# el.clear()
-# el.send_keys(username)
-# el = driver.find_element_by_name('password')
-# el.clear()
-# el.send_keys('12345678')
-# el.submit()
-# wait_for_stale(driver, el)
-# el = driver.find_element_by_name('title')
-# el.clear()
-# el.send_keys('test 1')
-# el = driver.find_element_by_name('url')
-# el.clear()
-# el.send_keys('http://www.example.com/')
-# el = driver.find_element_by_css_selector('.panel form button')
-# el.click()
-# wait_for_stale(driver, el)
-# el = driver.find_element_by_name('q')
-# el.clear()
-# el.send_keys('test')
-# el.submit()
-# wait_for_stale(driver, el)
-# time.sleep(10)
-# driver.close()
+def test_create_record(driver):
+    title = 'test'
+    url = 'http://example.com/'
+    username = 'test'
+    other = 'This is a test.'
+    driver.get(app_url)
+    driver.find_element_by_name('title').send_keys(title)
+    driver.find_element_by_name('url').send_keys(url)
+    driver.find_element_by_name('username').send_keys(username)
+    el = driver.find_element_by_name('other')
+    el.send_keys(other)
+    el.submit()
+    wait_for_stale(driver, el)
+    el = driver.find_elements_by_css_selector('.panel-body .row .col-sm-9')
+    assert el[0].text == title
+    assert el[1].text == url
+    assert el[2].text == username
+    assert el[3].text == '••••••••'
+    assert len(
+        el[3].find_element_by_css_selector('button.cb-copy')
+        .get_attribute('data-clipboard-text')
+    ) == 16
+    assert el[4].text == other
+
+
+def test_edit_record(driver):
+    title = 'test'
+    url = 'http://example.com/'
+    username = 'test'
+    other = 'This is a test.'
+    driver.get(app_url)
+    driver.find_element_by_link_text('All Records').click()
+    driver.execute_script(
+        'return document.querySelector(\'[href^="/edit/"]\')'
+    ).click()
+    driver.find_element_by_name('title').send_keys('edited')
+    driver.find_element_by_name('url').send_keys('edited')
+    driver.find_element_by_name('username').send_keys('edited')
+    driver.find_element_by_name('password').send_keys('edited')
+    el = driver.find_element_by_name('other')
+    el.send_keys('edited')
+    el.submit()
+    wait_for_stale(driver, el)
+    el = driver.find_elements_by_css_selector('.panel-body .row .col-sm-9')
+    assert el[0].text == title + 'edited'
+    assert el[1].text == url + 'edited'
+    assert el[2].text == username + 'edited'
+    assert el[3].text == '••••••••'
+    assert (
+        el[3].find_element_by_css_selector('button.cb-copy')
+        .get_attribute('data-clipboard-text')
+    )[16:] == 'edited'
+    assert el[4].text == other + 'edited'
+
+def test_change_password():
+    pass
+
+def test_search():
+    pass
+
+def test_save_search():
+    pass
