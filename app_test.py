@@ -111,11 +111,25 @@ def test_edit_record(driver):
     )[16:] == edited
     assert el[4].text == other + edited
 
+def test_search(driver):
+    driver.get(app_url)
+    el = driver.find_element_by_name('q')
+    el.send_keys('edited')
+    el.submit()
+    wait_for_stale(driver, el)
+    el = driver.find_element_by_css_selector('.container .alert')
+    assert '1' in el.text
+
+def test_save_search(driver):
+    driver.get(app_url)
+    el = driver.find_element_by_name('q')
+    el.send_keys('test')
+    el.submit()
+    wait_for_stale(driver, el)
+    driver.find_element_by_link_text('Saved Searches').click()
+    driver.find_element_by_link_text('Save This Search').click()
+    el = driver.find_element_by_css_selector('.container .alert')
+    assert 'Search term saved.' in el.text
+
 def test_change_password():
-    pass
-
-def test_search():
-    pass
-
-def test_save_search():
     pass
