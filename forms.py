@@ -79,3 +79,6 @@ class UserInfoForm(FlaskForm):
         [NumberRange(min=1, max=1440)],
     )
     hide_passwords = BooleanField()
+
+class ImportForm(FlaskForm):
+    json_data = TextAreaField('JSON Data')

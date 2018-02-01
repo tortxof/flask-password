@@ -1,9 +1,10 @@
 {% extends 'layout.html' %}
 {% block content %}
 <form class="" action="{{url_for('import_records')}}" method="post">
+  {{ form.hidden_tag() }}
   <div class="form-group">
-    <label for="json-data">JSON Data</label>
-    <textarea class="form-control" id="json-data" name="json-data"></textarea>
+    {{ form.json_data.label }}
+    {{ form.json_data(class='form-control') }}
   </div>
   <button class="btn btn-default" type="submit">Import</button>
 </form>

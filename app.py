@@ -42,6 +42,7 @@ from forms import (
     DeleteForm,
     ChangePasswordForm,
     UserInfoForm,
+    ImportForm,
 )
 
 app = Flask(__name__)
@@ -474,9 +475,10 @@ def export_records():
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
 def import_records():
-    if request.method == 'POST':
+    form = ImportForm()
+    if form.validate_on_submit():
         user = User.get(User.id == session['user_id'])
-        form_records = json.loads(request.form.get('json-data')).get('records')
+        form_records = json.loads(form.json_data.data).get('records')
         imported_counts = {'new': 0, 'updated': 0}
         for record in form_records:
             record = {
@@ -531,7 +533,11 @@ def import_records():
         )
         return redirect(url_for('index'))
     else:
-        return render_template('import_records.html', hide_search=True)
+        return render_template(
+            'import_records.html',
+            form = form,
+            hide_search = True,
+        )
 
 @app.route('/generate')
 def generate_passwords():
