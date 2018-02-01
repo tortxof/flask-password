@@ -1,13 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading"><h3 class="panel-title">Add Record</h3></div>
   <div class="panel-body">
-    {% if form.errors %}
-      {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-        {% for error in field_errors %}
-          <div class="alert alert-danger">{{ form[field_name].label }}: {{ error }}</div>
-        {% endfor %}
-      {% endfor %}
-    {% endif %}
+    {% include 'form_errors.html' %}
     <form action="{{url_for('add_record')}}" method="post">
       {{ form.hidden_tag() }}
       {% for field in form if field.widget.input_type != 'hidden' %}
