@@ -150,6 +150,15 @@ def test_edit_search(driver):
     el = driver.find_element_by_css_selector('.container .alert')
     assert '1' in el.text
 
+def test_delete_search(driver):
+    driver.get(app_url)
+    driver.find_element_by_link_text('Saved Searches').click()
+    driver.find_element_by_link_text('Edit Searches').click()
+    el = driver.find_element_by_name('delete')
+    el.click()
+    wait_for_stale(driver, el)
+    el = driver.find_element_by_css_selector('.container .alert')
+    assert 'Deleted saved search' in el.text
 
 def test_change_password():
     pass
