@@ -130,6 +130,11 @@ def test_save_search(driver):
     driver.find_element_by_link_text('Save This Search').click()
     el = driver.find_element_by_css_selector('.container .alert')
     assert 'Search term saved.' in el.text
+    driver.find_element_by_link_text('Saved Searches').click()
+    driver.find_element_by_link_text('test').click()
+    el = driver.find_element_by_css_selector('.container .alert')
+    assert '1' in el.text
+
 
 def test_change_password():
     pass
