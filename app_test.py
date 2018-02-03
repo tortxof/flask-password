@@ -160,6 +160,10 @@ def test_delete_search(driver):
     wait_for_stale(driver, el)
     el = driver.find_element_by_css_selector('.container .alert')
     assert 'Deleted saved search' in el.text
+    el = driver.find_element_by_link_text('Saved Searches')
+    el.click()
+    el = el.find_element_by_xpath('..').find_element_by_css_selector('ul')
+    assert el.text == ''
 
 def test_change_password():
     pass
