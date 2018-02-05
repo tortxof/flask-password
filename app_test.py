@@ -165,5 +165,19 @@ def test_delete_search(driver):
     el = el.find_element_by_xpath('..').find_element_by_css_selector('ul')
     assert el.text == ''
 
-def test_change_password():
-    pass
+def test_change_password(driver, credentials):
+    driver.get(app_url)
+    el = driver.find_element_by_css_selector('nav .glyphicon-cog')
+    el.find_element_by_xpath('..').click()
+    driver.find_element_by_link_text('Change Password').click()
+    el = driver.find_element_by_name('old_password')
+    el.send_keys(credentials[1])
+    el = driver.find_element_by_name('new_password')
+    el.send_keys(credentials[1])
+    el = driver.find_element_by_name('confirm_new_password')
+    el.send_keys(credentials[1])
+    el.submit()
+    wait_for_stale(driver, el)
+    el = driver.find_elements_by_css_selector('.container .alert')
+    assert 'Your password has been updated' in el[0].text
+    assert 'You are not logged in' in el[1].text
