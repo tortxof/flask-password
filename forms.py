@@ -45,7 +45,7 @@ class AddForm(FlaskForm):
     )
     other = TextAreaField('Other')
 
-class EditForm(AddForm):
+class EditForm(FlaskForm):
     id = HiddenField()
     title = StringField('Title', [Length(max=255)])
     url = StringField('URL', [Optional(), URL(), Length(max=255)])
