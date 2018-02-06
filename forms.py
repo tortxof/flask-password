@@ -6,6 +6,8 @@ from wtforms import (
     TextAreaField,
     PasswordField,
     HiddenField,
+    FormField,
+    FieldList,
 )
 from wtforms.validators import (
     InputRequired,
@@ -82,3 +84,12 @@ class UserInfoForm(FlaskForm):
 
 class ImportForm(FlaskForm):
     json_data = TextAreaField('JSON Data')
+
+class SavedSearchForm(FlaskForm):
+    id = HiddenField()
+    name = StringField('Name', [Optional(), Length(max=255)])
+    query = StringField('Query', [Length(max=255)])
+    delete = BooleanField()
+
+class SavedSearchesForm(FlaskForm):
+    searches = FieldList(FormField(SavedSearchForm))

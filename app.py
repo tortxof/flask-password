@@ -43,6 +43,7 @@ from forms import (
     ChangePasswordForm,
     UserInfoForm,
     ImportForm,
+    SavedSearchesForm,
 )
 
 app = Flask(__name__)
@@ -268,34 +269,24 @@ def save_search():
     flash('Search term saved.')
     return redirect(url_for('index'))
 
-@app.route('/searches/edit', methods=['POST'])
-@login_required
-def edit_search():
-    user = User.get(User.id == session['user_id'])
-    if 'delete' in request.form:
-        Search.get(
-            Search.id == request.form.get('id'),
-            Search.user == user,
-        ).delete_instance()
-        flash('Deleted saved search.')
-        return redirect(url_for('index'))
-    else:
-        form = request.form.to_dict()
-        search = Search.get(
-            Search.id == form['id'],
-            Search.user == user,
-        )
-        search.name = form['name']
-        search.query = form['query']
-        search.save()
-        flash('Changes saved.')
-        return redirect(url_for('index'))
-
-@app.route('/searches')
+@app.route('/searches', methods=['GET', 'POST'])
 @login_required
 def edit_searches():
-    searches = Search.select().join(User).where(User.id == session['user_id'])
-    return render_template('searches.html', searches=searches)
+    user = User.get(User.id == session['user_id'])
+    searches = Search.select().where(Search.user == user).dicts()
+    form = SavedSearchesForm(data={'searches': [*searches]})
+    if form.validate_on_submit():
+        for search in form.searches:
+            search_instance = Search.get(Search.id == search.form.id.data)
+            if search.form.delete.data:
+                search_instance.delete_instance()
+            else:
+                search_instance.name = search.form.name.data
+                search_instance.query = search.form.query.data
+                search_instance.save()
+        return redirect(url_for('edit_searches'))
+    else:
+        return render_template('searches.html', form=form)
 
 @app.route('/all')
 @login_required

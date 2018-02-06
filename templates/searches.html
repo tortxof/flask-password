@@ -1,27 +1,24 @@
 {% extends 'layout.html' %}
 {% block content %}
-{% if searches %}
+{% include 'form_errors.html' %}
 <div class="panel panel-default">
   <div class="panel-heading">Saved Searches</div>
   <div class="panel-body">
-    {% for search in searches %}
-    <p>
-      <form class="form-inline" action="{{url_for('edit_search')}}" method="post">
-        <input type="hidden" name="id" value="{{ search.id }}">
-        <div class="form-group">
-          <label for="name.{{ search.id }}">Name</label>
-          <input id="name.{{ search.id }}" class="form-control" type="text" name="name" value="{{ search.name }}">
+    <form class="form-inline" action="{{url_for('edit_searches')}}" method="post">
+      {{ form.hidden_tag() }}
+      {% for search in form.searches %}
+        <div>
+          {{ search.hidden_tag() }}
+          {% for field in search if field.widget.input_type != 'hidden' %}
+            <div class="form-group">
+              {{ field.label }}
+              {{ field(class='form-control') }}
+            </div>
+          {% endfor %}
         </div>
-        <div class="form-group">
-          <label for="query.{{ search.id }}">Query</label>
-          <input id="query.{{ search.id }}" class="form-control" type="text" name="query" value="{{ search.query }}">
-        </div>
-        <button class="btn btn-default" type="submit">Save Changes</button>
-        <button class="btn btn-default" type="submit" name="delete">Delete</button>
-      </form>
-    </p>
-    {% endfor %}
+      {% endfor %}
+      <button class="btn btn-default" type="submit">Save</button>
+    </form>
   </div>
 </div>
-{% endif %}
 {% endblock %}
