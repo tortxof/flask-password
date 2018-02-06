@@ -3,7 +3,6 @@ MAINTAINER Daniel Jones <tortxof@gmail.com>
 
 RUN groupadd -r app && useradd -r -m -g app app
 
-COPY requirements.txt /app/
 WORKDIR /app
 RUN pip install pipenv
 COPY . /app/
