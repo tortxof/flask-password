@@ -82,7 +82,7 @@ def upload_static():
 def before_request():
     g.now = datetime.datetime.utcnow()
     g.database = database
-    g.database.get_conn()
+    g.database.connect(reuse_if_open=True)
     if 'user_id' in session:
         g.searches = Search.select().join(User).where(
             User.id == session['user_id']
@@ -231,21 +231,25 @@ def search():
         g.query = query
     user = User.get(User.id == session['user_id'])
     try:
-        records = list(Password.select().where(
-            Password.user == user,
-            Password.search_content.match(('simple', query)),
-        ).order_by(Password.date_modified, Password.date_created).dicts())
+        records = list(
+            Password.select().where(
+                Password.user == user,
+                Password.search_content.match(query, language='simple'),
+            ).order_by(Password.date_modified, Password.date_created).dicts()
+        )
     except ProgrammingError:
         g.database.rollback()
         try:
-            records = list(Password.select().where(
-                Password.user == user,
-                Expression(
-                    Password.search_content,
-                    OP.TS_MATCH,
-                    fn.plainto_tsquery('simple', query),
-                ),
-            ).order_by(Password.date_modified, Password.date_created).dicts())
+            records = list(
+                Password.select().where(
+                    Password.user == user,
+                    Expression(
+                        Password.search_content,
+                        '@@',
+                        fn.plainto_tsquery('simple', query),
+                    ),
+                ).order_by(Password.date_modified, Password.date_created).dicts()
+            )
         except ProgrammingError:
             g.database.rollback()
             records = []
@@ -565,7 +569,7 @@ def user_info():
     recent_logins = (
         LoginEvent.select()
         .where(LoginEvent.user == user)
-        .limit(10).dicts()
+        .limit(10).order_by(-LoginEvent.date).dicts()
     )
     num_records = Password.select().where(Password.user == user).count()
     if request.method == 'POST':

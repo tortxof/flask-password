@@ -20,7 +20,7 @@ database = PostgresqlExtDatabase(
 
 def _migrate():
     from playhouse.migrate import PostgresqlMigrator, migrate
-    database.get_conn()
+    database.connect(reuse_if_open=True)
     database.create_tables([User, Password, Search, LoginEvent], safe=True)
     migrator = PostgresqlMigrator(database)
     try:
@@ -95,6 +95,3 @@ class LoginEvent(BaseModel):
     date = DateTimeField(default=datetime.datetime.utcnow)
     ip = CharField()
     user = ForeignKeyField(User)
-
-    class Meta:
-        order_by = ('-date',)
