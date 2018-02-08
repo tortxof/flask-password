@@ -343,7 +343,9 @@ def delete_record(password_id):
     except Password.DoesNotExist:
         flash('Record not found.')
         return redirect(url_for('index'))
-    form = DeleteForm(obj=record)
+    else:
+        record = crypto.decrypt_record(model_to_dict(record), session['key'])
+    form = DeleteForm(data=record)
     if form.validate_on_submit():
         try:
             Password.get(
