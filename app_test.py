@@ -94,7 +94,7 @@ def test_edit_record(driver):
         'return document.querySelector(\'[href^="/edit/"]\')'
     ).click()
     driver.find_element_by_name('title').send_keys(edited)
-    driver.find_element_by_name('url').send_keys(edited)
+    driver.find_element_by_name('url').send_keys(Keys.END+edited[1:])
     driver.find_element_by_name('username').send_keys(edited)
     driver.find_element_by_name('password').send_keys(edited)
     el = driver.find_element_by_name('other')
@@ -103,7 +103,7 @@ def test_edit_record(driver):
     wait_for_stale(driver, el)
     el = driver.find_elements_by_css_selector('.panel-body .row .col-sm-9')
     assert el[0].text == title + edited
-    assert el[1].text == url + edited
+    assert el[1].text == url + edited[1:]
     assert el[2].text == username + edited
     assert el[3].text == '••••••••'
     assert (
