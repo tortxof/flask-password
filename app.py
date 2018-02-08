@@ -334,18 +334,22 @@ def add_record():
     else:
         return render_template('index.html', form=form)
 
-@app.route('/delete', methods=['POST'])
-@app.route('/delete/<password_id>')
+@app.route('/delete/<password_id>', methods=['GET', 'POST'])
 @login_required
-def delete_record(password_id=None):
-    if password_id:
-        record = model_to_dict(Password.get(Password.id == password_id))
-        form = DeleteForm(formdata=None, data=record)
-    else:
-        form = DeleteForm()
+def delete_record(password_id):
+    user = User.get(User.id == session['user_id'])
+    try:
+        record = Password.get(Password.id == password_id, Password.user == user)
+    except Password.DoesNotExist:
+        flash('Record not found.')
+        return redirect(url_for('index'))
+    form = DeleteForm(obj=record)
     if form.validate_on_submit():
         try:
-            Password.get(Password.id == form.id.data).delete_instance()
+            Password.get(
+                Password.id == form.id.data,
+                Password.user == user,
+            ).delete_instance()
         except Password.DoesNotExist:
             flash('No records deleted.')
         else:
