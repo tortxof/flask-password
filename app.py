@@ -565,6 +565,11 @@ def user_info():
     num_records = Password.select().where(Password.user == user).count()
     form = UserInfoForm(obj=user)
     if form.validate_on_submit():
+        if form.session_time.data != user.session_time:
+            flash(
+                'You must log out and log in again for a new session time'
+                ' to take effect.'
+            )
         user.session_time = form.session_time.data
         user.hide_passwords = form.hide_passwords.data
         user.save()
