@@ -563,10 +563,7 @@ def user_info():
         .limit(10).order_by(-LoginEvent.date).dicts()
     )
     num_records = Password.select().where(Password.user == user).count()
-    if request.method == 'POST':
-        form = UserInfoForm()
-    else:
-        form = UserInfoForm(formdata=None, data=model_to_dict(user))
+    form = UserInfoForm(obj=user)
     if form.validate_on_submit():
         user.session_time = form.session_time.data
         user.hide_passwords = form.hide_passwords.data
