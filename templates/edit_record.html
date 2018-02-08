@@ -4,7 +4,7 @@
   <div class="panel-heading"><h3 class="panel-title">Edit Record</h3></div>
   <div class="panel-body">
     {% include 'form_errors.html' %}
-    <form action="{{url_for('edit_record')}}" method="post">
+    <form action="{{url_for('edit_record', password_id=form.id.data)}}" method="post">
       {{ form.hidden_tag() }}
       {% for field in form if field.widget.input_type != 'hidden' %}
         <div class="form-group">

@@ -359,29 +359,25 @@ def delete_record(password_id):
         flash('Are you sure you want to delete this record?')
         return render_template('delete_record.html', form=form, record=record)
 
-@app.route('/edit', methods=['POST'])
-@app.route('/edit/<password_id>')
+@app.route('/edit/<password_id>', methods=['GET', 'POST'])
 @login_required
-def edit_record(password_id=None):
+def edit_record(password_id):
     user = User.get(User.id == session['user_id'])
-    if password_id is not None:
-        record = crypto.decrypt_record(
-            model_to_dict(
-                Password.get(Password.user == user, Password.id == password_id)
-            ),
-            session['key'],
-        )
-        form = EditForm(
-            formdata = None,
-            data = record,
-        )
+    try:
+        record = Password.get(Password.id == password_id, Password.user == user)
+    except Password.DoesNotExist:
+        flash('Record not found.')
+        return redirect(url_for('index'))
     else:
-        form = EditForm()
+        record = crypto.decrypt_record(model_to_dict(record), session['key'])
+    form = EditForm(data=record)
     if form.validate_on_submit():
-        password_id = form.id.data
         record = crypto.decrypt_record(
             model_to_dict(
-                Password.get(Password.user == user, Password.id == password_id),
+                Password.get(
+                    Password.user == user,
+                    Password.id == form.id.data,
+                ),
                 only = [
                     Password.title,
                     Password.url,
@@ -398,13 +394,13 @@ def edit_record(password_id=None):
         Password.update(
             **record,
             date_modified=datetime.datetime.utcnow(),
-        ).where(Password.user == user, Password.id == password_id).execute()
+        ).where(Password.user == user, Password.id == form.id.data).execute()
         Password.get(
             Password.user == user,
-            Password.id == password_id,
+            Password.id == form.id.data,
         ).update_search_content()
         flash('Record updated.')
-        return redirect(url_for('view_record', password_id=password_id))
+        return redirect(url_for('view_record', password_id=form.id.data))
     else:
         return render_template('edit_record.html', form=form)
 
