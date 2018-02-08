@@ -317,16 +317,19 @@ def add_record():
     form = AddForm()
     if form.validate_on_submit():
         user = User.get(User.id == session['user_id'])
-        record = Password.create(
-            **crypto.encrypt_record({
-                'title': form.title.data,
-                'url': form.url.data,
-                'username': form.username.data,
-                'password': crypto.pwgen(),
-                'other': form.other.data,
-            }, session['key']),
-            user = user,
-        )
+        try:
+            record = Password.create(
+                **crypto.encrypt_record({
+                    'title': form.title.data,
+                    'url': form.url.data,
+                    'username': form.username.data,
+                    'password': crypto.pwgen(),
+                    'other': form.other.data,
+                }, session['key']),
+                user = user,
+            )
+        except:
+            g.database.rollback()
         record.update_search_content()
         flash('Record added.')
         return redirect(url_for('view_record', password_id=record.id))
@@ -392,10 +395,13 @@ def edit_record(password_id):
         for key in record.keys():
             record[key] = getattr(form, key).data
         record = crypto.encrypt_record(record, session['key'])
-        Password.update(
-            **record,
-            date_modified=datetime.datetime.utcnow(),
-        ).where(Password.user == user, Password.id == form.id.data).execute()
+        try:
+            Password.update(
+                **record,
+                date_modified=datetime.datetime.utcnow(),
+            ).where(Password.user == user, Password.id == form.id.data).execute()
+        except:
+            g.database.rollback()
         Password.get(
             Password.user == user,
             Password.id == form.id.data,
@@ -409,9 +415,13 @@ def edit_record(password_id):
 @login_required
 def view_record(password_id):
     user = User.get(User.id == session['user_id'])
-    record = model_to_dict(
-        Password.get(Password.user == user, Password.id == password_id)
-    )
+    try:
+        record = model_to_dict(
+            Password.get(Password.user == user, Password.id == password_id)
+        )
+    except Password.DoesNotExist:
+        flash('Record not found.')
+        return redirect(url_for('index'))
     record = crypto.decrypt_record(record, session['key'])
     return render_template('records.html', records=[record])
 
@@ -505,14 +515,20 @@ def import_records():
             ):
                 is_new = True
             if is_new:
-                record = Password.create(**record, user=user)
+                try:
+                    record = Password.create(**record, user=user)
+                except:
+                    g.database.rollback()
                 record.update_search_content()
                 imported_counts['new'] += 1
             else:
-                Password.update(**record).where(
-                    Password.id == record['id'],
-                    Password.user == user,
-                ).execute()
+                try:
+                    Password.update(**record).where(
+                        Password.id == record['id'],
+                        Password.user == user,
+                    ).execute()
+                except:
+                    g.database.rollback()
                 record = Password.get(Password.id == record['id'])
                 record.update_search_content()
                 imported_counts['updated'] += 1
