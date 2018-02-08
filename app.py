@@ -264,8 +264,12 @@ def search():
 @login_required
 def save_search():
     user = User.get(User.id == session['user_id'])
-    Search.create(query=request.args.get('query'), user=user)
-    flash('Search term saved.')
+    try:
+        Search.create(query=request.args.get('query'), user=user)
+    except:
+        g.database.rollback()
+    else:
+        flash('Search term saved.')
     return redirect(url_for('index'))
 
 @app.route('/searches', methods=['GET', 'POST'])
