@@ -169,7 +169,6 @@ def new_user():
 def username_available():
     username = request.args.get('user')
     form = SignupForm(
-        formdata = None,
         data = {'username': username, 'password': 'dummypassword'},
         meta = {'csrf': False},
     )
