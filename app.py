@@ -48,7 +48,7 @@ from forms import (
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'DEBUGSECRETKEY')
 
 app.config['FLASKS3_CDN_DOMAIN'] = os.environ.get('FLASKS3_CDN_DOMAIN')
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
@@ -57,7 +57,7 @@ app.config['FLASKS3_GZIP'] = True
 
 app.config['FLASK_ASSETS_USE_S3'] = True
 
-if os.environ.get('FLASK_DEBUG', 'false').lower() == 'true':
+if os.environ.get('FLASK_DEBUG'):
     app.config['DEBUG'] = True
     app.config['ASSETS_DEBUG'] = True
     app.config['FLASK_ASSETS_USE_S3'] = False
