@@ -58,24 +58,41 @@ clipboard.on('success', function(e) {
   showTooltip(e.trigger);
 });
 
-$('.show-pw').mousedown(function() {
-  var password = $(this)
-    .prev('.cb-copy')
-    .data('clipboard-text');
-  $(this)
-    .next('.password')
-    .text(password);
-});
-
-$('.show-pw').mouseup(function() {
-  var bullets = '';
-  for (var i = 0; i < 8; i++) {
-    bullets += '&bullet;';
+function showPassword(e) {
+  console.log(e);
+  if (e.target.classList.contains('show-pw')) {
+    e.preventDefault();
+    var password = e.target.parentElement.querySelector('button.cb-copy')
+      .dataset.clipboardText;
+    e.target.parentElement.querySelector('.password').innerText = password;
   }
-  $(this)
-    .next('.password')
-    .html(bullets);
-});
+}
+
+function hidePassword(e) {
+  console.log(e);
+  if (e.target.classList.contains('show-pw')) {
+    e.preventDefault();
+    e.target.parentElement.querySelector(
+      '.password'
+    ).innerHTML = '&bullet;'.repeat(8);
+  }
+}
+
+document
+  .getElementById('main-container')
+  .addEventListener('mousedown', showPassword);
+
+document
+  .getElementById('main-container')
+  .addEventListener('touchstart', showPassword);
+
+document
+  .getElementById('main-container')
+  .addEventListener('mouseup', hidePassword);
+
+document
+  .getElementById('main-container')
+  .addEventListener('touchend', hidePassword);
 
 var pageload_time = new Date().getTime() / 1000;
 var elSessionTimeFg = document.querySelector('.session-time .fg');

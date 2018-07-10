@@ -101,7 +101,7 @@
       </div>
     </div>
   </div>
-  <div class="container">
+  <div class="container" id="main-container">
     {% if 'username' in session and not hide_search %}{% include 'search_form.html' %}{% endif %}
     {% with messages = get_flashed_messages() %}
       {% if messages %}
