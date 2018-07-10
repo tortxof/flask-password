@@ -20,8 +20,10 @@
   <button class="btn btn-default" type="submit">Log In</button>
 </form>
 <script>
-window.addEventListener('focus', function() {
-  window.location.reload();
-});
+window.setTimeout(function () {
+  window.addEventListener('focus', function () {
+    window.location.reload();
+  });
+}, 10000);
 </script>
 {% endblock %}
