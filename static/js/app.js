@@ -59,7 +59,6 @@ clipboard.on('success', function(e) {
 });
 
 function showPassword(e) {
-  console.log(e);
   if (e.target.classList.contains('show-pw')) {
     e.preventDefault();
     var password = e.target.parentElement.querySelector('button.cb-copy')
@@ -69,7 +68,6 @@ function showPassword(e) {
 }
 
 function hidePassword(e) {
-  console.log(e);
   if (e.target.classList.contains('show-pw')) {
     e.preventDefault();
     e.target.parentElement.querySelector(
