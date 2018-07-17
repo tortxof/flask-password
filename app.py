@@ -185,6 +185,9 @@ def username_available():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user_id' in session:
+        flash('You are already logged in.')
+        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         try:
