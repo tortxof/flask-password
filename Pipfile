@@ -1,24 +1,19 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
-uwsgi = "*"
 flask = "*"
-pycrypto = "*"
+pycryptodome = "*"
 "flask-s3" = "*"
 peewee = "*"
-"psycopg2" = "*"
+"psycopg2-binary" = "*"
 zappa = "*"
 flask-assets = "*"
 flask-wtf = "*"
 
-
 [dev-packages]
-
 pytest = "*"
 selenium = "*"
+pylint = "*"

@@ -11,18 +11,18 @@ myMarkov = markov.Markov()
 
 def encrypt(key, data):
     '''Encrypts data with AES cipher using key and random iv.'''
+    if isinstance(data, str):
+        data = data.encode()
     key = b64_decode(key)
-    iv = os.urandom(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CFB, iv)
-    return b64_encode(iv + cipher.encrypt(data))
+    cipher = AES.new(key, AES.MODE_CFB)
+    return b64_encode(cipher.iv + cipher.encrypt(data))
 
 def decrypt(key, data):
     '''Decrypt ciphertext using key'''
     key = b64_decode(key)
     data = b64_decode(data)
-    iv = os.urandom(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CFB, iv)
-    out = cipher.decrypt(data)[AES.block_size:]
+    cipher = AES.new(key, AES.MODE_CFB, iv=data[:AES.block_size])
+    out = cipher.decrypt(data[AES.block_size:])
     try:
         return out.decode()
     except AttributeError:
