@@ -69,6 +69,8 @@ s3 = FlaskS3(app)
 
 assets = Environment(app)
 assets.auto_build = False
+assets.cache = False
+assets.manifest = 'json:manifest.json'
 
 js = Bundle('js/app.js', output='app.%(version)s.js')
 css = Bundle('css/app.css', output='app.%(version)s.css')
