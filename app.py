@@ -338,10 +338,13 @@ def add_record():
                 user = user,
             )
         except:
+            flash('There was a problem saving the record.')
             g.database.rollback()
-        record.update_search_content()
-        flash('Record added.')
-        return redirect(url_for('view_record', password_id=record.id))
+        else:
+            record.update_search_content()
+            flash('Record added.')
+            return redirect(url_for('view_record', password_id=record.id))
+        return redirect(url_for('add_record'))
     else:
         return render_template('index.html', form=form)
 
