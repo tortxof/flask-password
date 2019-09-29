@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flask-password"
-version = "0.6.0"
+version = "0.6.1"
 description = ""
 authors = ["Daniel Jones <tortxof@gmail.com>"]
 
