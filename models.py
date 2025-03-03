@@ -39,6 +39,12 @@ def _migrate():
     database.close()
 
 
+class UtcDateTimeField(DateTimeField):
+    def python_value(self, value):
+        if isinstance(value, datetime.datetime):
+            return value.replace(tzinfo=datetime.timezone.utc)
+
+
 class BaseModel(Model):
     class Meta:
         database = database
@@ -52,7 +58,7 @@ class User(BaseModel):
     key = CharField()
     session_time = IntegerField(default=10)
     hide_passwords = BooleanField(default=True)
-    date_created = DateTimeField(default=utcnow)
+    date_created = UtcDateTimeField(default=utcnow)
 
 
 class Password(BaseModel):
@@ -64,8 +70,8 @@ class Password(BaseModel):
     other = TextField()
     search_content = TSVectorField(default="")
     user = ForeignKeyField(User)
-    date_created = DateTimeField(default=utcnow)
-    date_modified = DateTimeField(default=utcnow)
+    date_created = UtcDateTimeField(default=utcnow)
+    date_modified = UtcDateTimeField(default=utcnow)
 
     def update_search_content(self):
         search_content = [
@@ -89,6 +95,6 @@ class Search(BaseModel):
 
 
 class LoginEvent(BaseModel):
-    date = DateTimeField(default=utcnow)
+    date = UtcDateTimeField(default=utcnow)
     ip = CharField()
     user = ForeignKeyField(User)
