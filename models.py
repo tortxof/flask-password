@@ -1,25 +1,42 @@
+import datetime
 import os
 import secrets
 from urllib.parse import urlparse
-import datetime
 
-from peewee import *
-from peewee import Expression, OP
+from peewee import (
+    BooleanField,
+    CharField,
+    DateTimeField,
+    ForeignKeyField,
+    IntegerField,
+    Model,
+    ProgrammingError,
+    TextField,
+    fn,
+)
 from playhouse.postgres_ext import PostgresqlExtDatabase, TSVectorField
+
 
 def gen_id():
     return secrets.token_urlsafe(24)
 
+
+def utcnow():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
 database = PostgresqlExtDatabase(
-    os.environ.get('PG_NAME', 'passwords'),
-    host = os.environ.get('PG_HOST', 'localhost'),
-    user = os.environ.get('PG_USER', 'postgres'),
-    password = os.environ.get('PG_PASSWORD', 'postgres'),
-    register_hstore = False,
+    os.getenv("PG_NAME", "passwords"),
+    host=os.getenv("PG_HOST", "localhost"),
+    user=os.getenv("PG_USER", "postgres"),
+    password=os.getenv("PG_PASSWORD", "postgres"),
+    register_hstore=False,
 )
+
 
 def _migrate():
     from playhouse.migrate import PostgresqlMigrator, migrate
+
     database.connect(reuse_if_open=True)
     database.create_tables([User, Password, Search, LoginEvent], safe=True)
     migrator = PostgresqlMigrator(database)
@@ -27,28 +44,30 @@ def _migrate():
         with database.transaction():
             migrate(
                 migrator.add_column(
-                    'user',
-                    'date_created',
-                    DateTimeField(default=datetime.datetime.utcnow),
+                    "user",
+                    "date_created",
+                    DateTimeField(default=utcnow),
                 ),
                 migrator.add_column(
-                    'password',
-                    'date_created',
-                    DateTimeField(default=datetime.datetime.utcnow),
+                    "password",
+                    "date_created",
+                    DateTimeField(default=utcnow),
                 ),
                 migrator.add_column(
-                    'password',
-                    'date_modified',
-                    DateTimeField(default=datetime.datetime.utcnow),
+                    "password",
+                    "date_modified",
+                    DateTimeField(default=utcnow),
                 ),
             )
     except ProgrammingError:
         pass
     database.close()
 
+
 class BaseModel(Model):
     class Meta:
         database = database
+
 
 class User(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
@@ -58,7 +77,8 @@ class User(BaseModel):
     key = CharField()
     session_time = IntegerField(default=10)
     hide_passwords = BooleanField(default=True)
-    date_created = DateTimeField(default=datetime.datetime.utcnow)
+    date_created = DateTimeField(default=utcnow)
+
 
 class Password(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
@@ -67,31 +87,33 @@ class Password(BaseModel):
     username = CharField()
     password = CharField()
     other = TextField()
-    search_content = TSVectorField(default='')
+    search_content = TSVectorField(default="")
     user = ForeignKeyField(User)
-    date_created = DateTimeField(default=datetime.datetime.utcnow)
-    date_modified = DateTimeField(default=datetime.datetime.utcnow)
+    date_created = DateTimeField(default=utcnow)
+    date_modified = DateTimeField(default=utcnow)
 
     def update_search_content(self):
         search_content = [
-            str(getattr(self, field)) for field in
-            (
-                'title',
-                'url',
-                'username',
+            str(getattr(self, field))
+            for field in (
+                "title",
+                "url",
+                "username",
             )
         ]
-        search_content += urlparse(self.url).netloc.split(':')[0].split('.')
-        self.search_content = fn.to_tsvector('simple', ' '.join(search_content))
+        search_content += urlparse(self.url).netloc.split(":")[0].split(".")
+        self.search_content = fn.to_tsvector("simple", " ".join(search_content))
         self.save()
+
 
 class Search(BaseModel):
     id = CharField(primary_key=True, default=gen_id)
-    name = CharField(default='')
+    name = CharField(default="")
     query = CharField()
     user = ForeignKeyField(User)
 
+
 class LoginEvent(BaseModel):
-    date = DateTimeField(default=datetime.datetime.utcnow)
+    date = DateTimeField(default=utcnow)
     ip = CharField()
     user = ForeignKeyField(User)
