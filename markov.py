@@ -1,7 +1,8 @@
+import json
+import random
 import string
 from collections import defaultdict
-import random
-import json
+
 
 def pairwise(iterable):
     """
@@ -19,22 +20,24 @@ def pairwise(iterable):
         yield a, b
         a = b
 
-def generate_counts(corpus_file='corpus.txt', counts_file='counts.json'):
+
+def generate_counts(corpus_file="corpus.txt", counts_file="counts.json"):
     with open(corpus_file) as f:
         corpus = f.read()
-    corpus = ''.join(
-        c.lower() if c in string.ascii_letters else ' ' for c in corpus
+    corpus = "".join(
+        c.lower() if c in string.ascii_letters else " " for c in corpus
     ).split()
     corpus = [word for word in corpus if len(word) > 1]
     counts = defaultdict(lambda: defaultdict(int))
     for word in corpus:
         for a, b in pairwise(word):
             counts[a][b] += 1
-    with open(counts_file, 'w') as f:
+    with open(counts_file, "w") as f:
         json.dump(counts, f)
 
+
 class Markov(object):
-    def __init__(self, counts_file='counts.json'):
+    def __init__(self, counts_file="counts.json"):
         self.sys_rand = random.SystemRandom()
         with open(counts_file) as f:
             self.counts = json.load(f)
@@ -48,4 +51,4 @@ class Markov(object):
         cap, num = self.sys_rand.sample(range(len(password)), 2)
         password[num] = str(self.sys_rand.randrange(10))
         password[cap] = password[cap].upper()
-        return ''.join(password)
+        return "".join(password)
