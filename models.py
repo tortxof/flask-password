@@ -10,7 +10,6 @@ from peewee import (
     ForeignKeyField,
     IntegerField,
     Model,
-    ProgrammingError,
     TextField,
     fn,
 )
@@ -35,32 +34,8 @@ database = PostgresqlExtDatabase(
 
 
 def _migrate():
-    from playhouse.migrate import PostgresqlMigrator, migrate
-
     database.connect(reuse_if_open=True)
     database.create_tables([User, Password, Search, LoginEvent], safe=True)
-    migrator = PostgresqlMigrator(database)
-    try:
-        with database.transaction():
-            migrate(
-                migrator.add_column(
-                    "user",
-                    "date_created",
-                    DateTimeField(default=utcnow),
-                ),
-                migrator.add_column(
-                    "password",
-                    "date_created",
-                    DateTimeField(default=utcnow),
-                ),
-                migrator.add_column(
-                    "password",
-                    "date_modified",
-                    DateTimeField(default=utcnow),
-                ),
-            )
-    except ProgrammingError:
-        pass
     database.close()
 
 
