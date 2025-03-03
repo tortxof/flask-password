@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Password Manager{% if 'username' in session %} - {{ session.username }}{% endif %}</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-  {% assets "css_all" %}
-  <link href="{{ ASSET_URL }}" rel="stylesheet">
-  {% endassets %}
+  <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar navbar-inverse navbar-static-top">
@@ -145,8 +143,6 @@
     var refresh_time = null
     {% endif %}
   </script>
-  {% assets "js_all" %}
-  <script src="{{ ASSET_URL }}"></script>
-  {% endassets %}
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
