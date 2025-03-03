@@ -15,6 +15,7 @@ from flask import (
     session,
     url_for,
 )
+from peewee import Expression, IntegrityError, ProgrammingError, fn
 from playhouse.shortcuts import model_to_dict
 from werkzeug.security import check_password_hash, generate_password_hash
 from whitenoise import WhiteNoise
@@ -33,15 +34,11 @@ from forms import (
     UserInfoForm,
 )
 from models import (
-    Expression,
-    IntegrityError,
     LoginEvent,
     Password,
-    ProgrammingError,
     Search,
     User,
     database,
-    fn,
 )
 
 app = Flask(__name__)
