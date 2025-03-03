@@ -58,7 +58,7 @@ with open("VERSION") as f:
 
 @app.before_request
 def before_request():
-    g.now = datetime.datetime.utcnow()
+    g.now = datetime.datetime.now(datetime.timezone.utc)
     g.database = database
     g.database.connect(reuse_if_open=True)
     if "user_id" in session:
@@ -401,7 +401,7 @@ def edit_record(password_id):
         try:
             Password.update(
                 **record,
-                date_modified=datetime.datetime.utcnow(),
+                date_modified=datetime.datetime.now(datetime.timezone.utc),
             ).where(Password.user == user, Password.id == form.id.data).execute()
         except:
             g.database.rollback()
