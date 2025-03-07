@@ -46,7 +46,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "DEBUGSECRETKEY")
 app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/")
 
-if json.loads(os.getenv("FLASK_DEBUG", "true")):
+if json.loads(os.getenv("FLASK_DEBUG", "false")):
     app.config["DEBUG"] = True
 
 with open("VERSION") as f:
