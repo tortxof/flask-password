@@ -1,20 +1,13 @@
-FROM python:3.6
-MAINTAINER Daniel Jones <tortxof@gmail.com>
+FROM public.ecr.aws/docker/library/python:3.13.2
 
-RUN groupadd -r app && useradd -r -m -g app app
+LABEL maintainer="tortxof@gmail.com"
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ADD . /app
 
 WORKDIR /app
-RUN pip install pipenv
-COPY . /app/
 
-RUN chown -R app:app /app
+RUN uv sync --frozen
 
-USER app
-
-RUN pipenv install
-
-EXPOSE 5000
-
-ENV FLASK_DEBUG=true
-
-CMD ["pipenv", "run", "python", "app.py"]
+CMD ["uv", "run", "gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:app"]
