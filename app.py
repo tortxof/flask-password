@@ -176,7 +176,7 @@ def login():
         if user is not None and check_password_hash(user.password, form.password.data):
             LoginEvent.create(
                 user=user,
-                ip=request.remote_addr,
+                ip=request.environ.get("HTTP_X_FORWARDED_FOR", request.remote_addr),
             )
             session["username"] = user.username
             session["user_id"] = user.id
