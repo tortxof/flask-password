@@ -111,7 +111,7 @@ def login_required(f):
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html", form=AddForm())
+    return redirect(url_for("add_record"))
 
 
 @app.route("/new-user", methods=["GET", "POST"])
