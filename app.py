@@ -15,7 +15,7 @@ from flask import (
     session,
     url_for,
 )
-from peewee import Expression, IntegrityError, ProgrammingError, fn
+from peewee import Expression, IntegrityError, PeeweeException, ProgrammingError, fn
 from playhouse.shortcuts import model_to_dict
 from werkzeug.security import check_password_hash, generate_password_hash
 from whitenoise import WhiteNoise
@@ -251,7 +251,7 @@ def save_search():
     user = User.get(User.id == session["user_id"])
     try:
         Search.create(query=request.args.get("query"), user=user)
-    except:
+    except PeeweeException:
         g.database.rollback()
     else:
         flash("Search term saved.")
@@ -323,7 +323,7 @@ def add_record():
                 ),
                 user=user,
             )
-        except:
+        except PeeweeException:
             flash("There was a problem saving the record.")
             g.database.rollback()
         else:
@@ -400,7 +400,7 @@ def edit_record(password_id):
                 **record,
                 date_modified=datetime.datetime.now(datetime.timezone.utc),
             ).where(Password.user == user, Password.id == form.id.data).execute()
-        except:
+        except PeeweeException:
             g.database.rollback()
         Password.get(
             Password.user == user,
@@ -517,7 +517,7 @@ def import_records():
             if is_new:
                 try:
                     record = Password.create(**record, user=user)
-                except:
+                except PeeweeException:
                     g.database.rollback()
                 record.update_search_content()
                 imported_counts["new"] += 1
@@ -527,7 +527,7 @@ def import_records():
                         Password.id == record["id"],
                         Password.user == user,
                     ).execute()
-                except:
+                except PeeweeException:
                     g.database.rollback()
                 record = Password.get(Password.id == record["id"])
                 record.update_search_content()
