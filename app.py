@@ -615,6 +615,7 @@ def delete_account():
         and check_password_hash(user.password, form.password.data)
     ):
         user.delete_instance(recursive=True)
+        session.clear()
         flash("Account deleted.")
         return redirect(url_for("index"))
     else:
