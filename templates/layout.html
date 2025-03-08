@@ -23,7 +23,7 @@
       <div class="collapse navbar-collapse" id="navbar">
         <ul class="nav navbar-nav">
           {% if 'username' in session %}
-          <li><a href="{{url_for('index')}}">Add Record</a></li>
+          <li><a href="{{url_for('add_record')}}">Add Record</a></li>
           <li><a href="{{url_for('all_records')}}">All Records</a></li>
           <li><a href="{{url_for('generate_passwords')}}" target="_blank" id="genpw-open">Generate Passwords</a></li>
           <li class="dropdown">
